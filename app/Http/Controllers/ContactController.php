@@ -19,6 +19,7 @@ class ContactController extends Controller
      */
     public function index()
     {
+        ///hi
         if (request()->ajax()) {
             return datatables()->of(Contact::latest()->get())
                 ->addColumn('titleNames', function ($data) {
