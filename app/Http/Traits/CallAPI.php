@@ -2,6 +2,8 @@
 
 namespace App\Http\Traits;
 
+use App\CustomClass\UserLoginInfo;
+
 trait CallAPI
 {
     static public function postAPI($apiName, $body){
@@ -10,10 +12,20 @@ trait CallAPI
         $accept = env("API_ACCEPT", "application/json");
         $accept_language = env("API_ACCEPT_LANGUAGE", "1");
 
-        $client = new \GuzzleHttp\Client([
-            'base_uri' => $base_url,
-            'headers' => ['Content-Type' => $content_type, "Accept" => $accept, 'Accept-Language'=> $accept_language]
-        ]);
+        $userData = UserLoginInfo::get();
+
+        if ($userData != null){
+            $client = new \GuzzleHttp\Client([
+                'base_uri' => $base_url,
+                'headers' => ['Content-Type' => $content_type, "Accept" => $accept, 'Accept-Language'=> $accept_language, 'user-token' => $userData->token]
+            ]);
+        }
+        else{
+            $client = new \GuzzleHttp\Client([
+                'base_uri' => $base_url,
+                'headers' => ['Content-Type' => $content_type, "Accept" => $accept, 'Accept-Language'=> $accept_language]
+            ]);
+        }
 
         $res = $client->post($apiName, [
             'body' => json_encode($body)

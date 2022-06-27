@@ -6,6 +6,7 @@ use App\CustomClass\UserLoginInfo;
 use App\Http\Traits\CallAPI;
 use Illuminate\Http\Request;
 use \GuzzleHttp\Psr7\Request as GRequest;
+use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Session;
 
@@ -13,18 +14,20 @@ class CustomAuth extends Controller
 {
 
     public function index(){
-        return view('login');
+        return view('auth.login');
     }
 
     public function login(Request $request){
 
+        $email = $request->input('email');
+        $password = $request->input('password');
+
         $body = [
-            'email' => 'as.super.ad.1@gmail.com',
-            'password' => '$2y$10$L5a/cZTgK9CSEu1IeLx.veRFCEHF1/z9ILxbPkuGr2/BCxICR.56e'
+            'email' => $email,
+            'password' =>  $password,
         ];
 
         $result = CallAPI::postAPI('user/login',$body);
-
 
         $errCode = $result['errCode'];
         $errMsg = $result['errMsg'];
@@ -36,7 +39,7 @@ class CustomAuth extends Controller
 
         UserLoginInfo::set($token, $user_name, $permissions);
 
-        return redirect()->route('home');
+        return redirect()->route('events');
     }
 
     public function logout(Request $request){
