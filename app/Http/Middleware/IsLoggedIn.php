@@ -20,7 +20,6 @@ class IsLoggedIn
 
         $userData = UserLoginInfo::get();
 
-//        dd($userData);
         if(!$userData){
             return redirect('/');
         }
