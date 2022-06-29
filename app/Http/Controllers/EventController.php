@@ -23,66 +23,93 @@ use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Response;
 use App\Http\Traits\LogTrait;
+use App\Http\Traits\CallAPI;
 
 
 class EventController extends Controller
 {
     public function getData($all, $values){
-        $whereStatusCondition = '';
-        if($all == 1){
-            $whereStatusCondition = 'where 1=1 ';
-        }
-        else{
-            $whereStatusCondition = ' where e.status < 4';
-        }
-        $totalSize = DB::select('select * from events_view e ' . $whereStatusCondition);
-        $size = 10;
+        // $whereStatusCondition = '';
+        // if($all == 1){
+        //     $whereStatusCondition = 'where 1=1 ';
+        // }
+        // else{
+        //     $whereStatusCondition = ' where e.status < 4';
+        // }
+        // $totalSize = DB::select('select * from events_view e ' . $whereStatusCondition);
+        // $size = 10;
 
-        $whereCondition = "";
+        // $whereCondition = "";
+        // if($values != null){
+        //     if(str_contains($values,",")){
+        //         $comands = explode(",",$values);
+        //         $skip = $size * $comands[0];
+        //         $c_size = sizeof($comands);
+        //         $i = 1;
+        //         while($i < sizeof($comands)){
+        //             $token = $comands[$i];
+        //             $i = $i + 1;
+        //             $complexityType = $comands[$i];
+        //             if($complexityType == "C"){
+        //                 $i = $i + 1;
+        //                 $condition1 = $comands[$i];
+        //                 $i = $i + 1;
+        //                 $condition1token = $comands[$i];
+        //                 $i = $i + 1;
+        //                 $operator = $comands[$i];
+        //                 $i = $i + 1;
+        //                 $condition2 = $comands[$i];
+        //                 $i = $i + 1;
+        //                 $condition2token = $comands[$i];
+        //                 $whereCondition =  $whereCondition." and ".ConditionTrait::getConditionPart($token,$condition1,$condition1token) . " ".$operator ." ". ConditionTrait::getConditionPart($token,$condition2,$condition2token);
+        //             }else{
+        //                 $i = $i + 1;
+        //                 $condition1 = $comands[$i];
+        //                 $i = $i + 1;
+        //                 $condition1token = $comands[$i];
+        //                 $whereCondition = $whereCondition." and ".ConditionTrait::getConditionPart($token,$condition1,$condition1token);
+        //             }
+        //             $i = $i + 1;
+        //         }
+        //         $totalSize = DB::select('select * from events_view e ' . $whereStatusCondition . $whereCondition);
+        //         $events = DB::select('select * from events_view e ' . $whereStatusCondition. $whereCondition." LIMIT ". $size. " OFFSET ". $skip);
+        //     }else{
+        //         $skip = $size * $values;
+        //         $events = DB::select("select * from events_view e " . $whereStatusCondition . " LIMIT ". $size. " OFFSET ". $skip);
+        //     }
+        // }
+        $offset = 0;
         if($values != null){
             if(str_contains($values,",")){
                 $comands = explode(",",$values);
-                $skip = $size * $comands[0];
-                $c_size = sizeof($comands);
-                $i = 1;
-                while($i < sizeof($comands)){
-                    $token = $comands[$i];
-                    $i = $i + 1;
-                    $complexityType = $comands[$i];
-                    if($complexityType == "C"){
-                        $i = $i + 1;
-                        $condition1 = $comands[$i];
-                        $i = $i + 1;
-                        $condition1token = $comands[$i];
-                        $i = $i + 1;
-                        $operator = $comands[$i];
-                        $i = $i + 1;
-                        $condition2 = $comands[$i];
-                        $i = $i + 1;
-                        $condition2token = $comands[$i];
-                        $whereCondition =  $whereCondition." and ".ConditionTrait::getConditionPart($token,$condition1,$condition1token) . " ".$operator ." ". ConditionTrait::getConditionPart($token,$condition2,$condition2token);
-                    }else{
-                        $i = $i + 1;
-                        $condition1 = $comands[$i];
-                        $i = $i + 1;
-                        $condition1token = $comands[$i];
-                        $whereCondition = $whereCondition." and ".ConditionTrait::getConditionPart($token,$condition1,$condition1token);
-                    }
-                    $i = $i + 1;
-                }
-                $totalSize = DB::select('select * from events_view e ' . $whereStatusCondition . $whereCondition);
-                $events = DB::select('select * from events_view e ' . $whereStatusCondition. $whereCondition." LIMIT ". $size. " OFFSET ". $skip);
-            }else{
-                $skip = $size * $values;
-                $events = DB::select("select * from events_view e " . $whereStatusCondition . " LIMIT ". $size. " OFFSET ". $skip);
+                $offset = $comands[0];
             }
         }
+        $body = [
+            'offset' => $offset,
+            'size' => 10,
+            'filters' => $values
+        ];
+        if($all == 1){
+            $result = CallAPI::postAPI('event/getAllWithArchived',$body);
+        }else{
+            $result = CallAPI::postAPI('event/getAll',$body);
+        }
+        //$result = CallAPI::postAPI('event/getAll',$body);
+        $errCode = $result['errCode'];
+        $errMsg = $result['errMsg'];
+        $data = $result['data'];
+        $data = json_decode(json_encode($data));
+        // var_dump(json_decode(json_encode($data->data)));
+        // exit;
+        // while($data == null){
 
+        // }
         return Response::json(array(
             'success' =>true,
             'code' => 1,
-            'size' => round(sizeof($totalSize)/2),
-            'events' => $events,
+            'size' => $data->gridcount,
+            'events' => $data->data,
             'message' => 'hi'
         ));
     }

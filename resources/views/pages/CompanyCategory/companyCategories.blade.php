@@ -200,6 +200,7 @@
             $('body').on('click', '#edit-category', function () {
                 var category_id = $(this).data('id');
                 $.get('companyCategoryController/' + category_id + '/edit', function (data) {
+                    console.log(data);
                     $('#name-error').hide();
                     $('#postCrudModal').html("Edit Company Category");
                     $('#btn-save').val("edit-category");

@@ -6,6 +6,7 @@ use App\Models\EventType;
 use Illuminate\Http\Request;
 use Redirect;
 use Illuminate\Support\Facades\Response;
+use App\Http\Traits\CallAPI;
 
 class EventTypeController extends Controller
 {
@@ -17,7 +18,13 @@ class EventTypeController extends Controller
     public function index()
     {
         if (request()->ajax()) {
-            return datatables()->of(EventType::latest()->get())
+            $body = [];
+            $result = CallAPI::postAPI('eventType/getAll',$body);
+            $errCode = $result['errCode'];
+            $errMsg = $result['errMsg'];
+            $data = $result['data'];
+            $data = json_decode(json_encode($data));
+            return datatables()->of($data->data)
                 ->addColumn('action', function ($data) {
                     $button = '<a href="javascript:void(0)" id="edit-type" data-toggle="tooltip"  data-id="' . $data->id . '" data-original-title="Edit" title="Edit"><i class="fas fa-edit"></i></a>';
                     $button .= '&nbsp;&nbsp;';
@@ -44,19 +51,39 @@ class EventTypeController extends Controller
 
     public function store(Request $request)
     {
-        try{
-        $postId = $request->post_id;
-        $post = EventType::updateOrCreate(['id' => $postId],
-            ['name' => $request->name,
+        // try{
+        // $postId = $request->post_id;
+        // $post = EventType::updateOrCreate(['id' => $postId],
+        //     ['name' => $request->name,
+        //         'status' => $request->status
+        //     ]);
+        // } catch (\Exception $e) {
+        //     return Response::json(array(
+        //         'code' => 400,
+        //         'message' => $e->getMessage()
+        //     ), 400);
+        // }
+        // return Response::json($post);
+        $eventId = $request->post_id;
+        if($eventId != ''){
+            $body = [
+                'event_type_id' => $eventId,
+                'name' => $request->name,
                 'status' => $request->status
-            ]);
-        } catch (\Exception $e) {
-            return Response::json(array(
-                'code' => 400,
-                'message' => $e->getMessage()
-            ), 400);
+            ];
+            $result = CallAPI::postAPI('eventType/edit',$body);
+        }else{
+            $body = [
+                'name' => $request->name,
+                'status' => $request->status
+            ];
+            $result = CallAPI::postAPI('eventType/create',$body);
         }
-        return Response::json($post);
+        $errCode = $result['errCode'];
+        $errMsg = $result['errMsg'];
+        $data = $result['data'];
+        $data = json_decode(json_encode($data));
+        return Response::json($data);
     }
 
     /**
@@ -67,9 +94,18 @@ class EventTypeController extends Controller
 
     public function edit($id)
     {
-        $where = array('id' => $id);
-        $post = EventType::where($where)->first();
-        return Response::json($post);
+        // $where = array('id' => $id);
+        // $post = EventType::where($where)->first();
+        // return Response::json($post);
+        $body = [
+            'event_type_id' => $id
+        ];
+        $result = CallAPI::postAPI('eventType/getByID',$body);
+        $errCode = $result['errCode'];
+        $errMsg = $result['errMsg'];
+        $data = $result['data'];
+        $data = json_decode(json_encode($data));
+        return Response::json($data->data[0]);
     }
 
 
@@ -86,11 +122,26 @@ class EventTypeController extends Controller
 
     public function changeStatus($id, $status)
     {
-        $post = EventType::updateOrCreate(['id' => $id],
-            [
-                'status' => $status
-            ]);
-        return Response::json($post);
+        // $post = EventType::updateOrCreate(['id' => $id],
+        //     [
+        //         'status' => $status
+        //     ]);
+        // return Response::json($post);
+        $body = [
+            'event_type_id' => $id
+        ];
+        if($status == 1){
+            $result = CallAPI::postAPI('eventType/enable',$body);
+        }
+        else{
+            $result = CallAPI::postAPI('eventType/disable',$body);
+        }
+        //$result = CallAPI::postAPI('companyCategory/create',$body);
+        $errCode = $result['errCode'];
+        $errMsg = $result['errMsg'];
+        $data = $result['data'];
+        $data = json_decode(json_encode($data));
+        return Response::json($data);
     }
 }
 

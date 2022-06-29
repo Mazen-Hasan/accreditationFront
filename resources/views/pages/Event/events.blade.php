@@ -377,6 +377,7 @@
             fetch('{{ route('eventsData',["0","0"]) }}')
                 .then(response => response.json())
                 .then(data => {
+                    console.log(data);
                     $('#total_count').html('Total pages count: ' + data.size);
                     totalSize = data.size;
                     gridOptions.api.setRowData(data.events);
