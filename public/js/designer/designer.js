@@ -1,4 +1,4 @@
-
+var images = {};
 badge_size_array = [];
 var badge_elements = [];
 var elements_id = [];
@@ -210,18 +210,20 @@ function showPros(pros,obj) {
     selected_obj = obj;
     console.log(pros);
     $('#field-name').val(pros.type);
-    $('#position-x').val(pros.x);
-    $('#position-y').val(pros.y);
-    $('#item-width').val(obj.width());
-    $('#item-height').val(obj.height());
+    $('#position-x').val(Math.round(pros.x));
+    $('#position-y').val(Math.round(pros.y));
+    $('#item-width').val(Math.round(obj.width()));
+    $('#item-height').val(Math.round(obj.height()));
     if(pros.kind == 'text'){
         $('#font-size-container').show();
         $('#item-font-size').val(pros.fontSize);
         $('#font-container').show();
         $('#item-font-family').val(pros.fontFamily);
+        $('#update_color').css({ 'position':'absolute','left': '65%' ,'top': '86%' });
     }else{
         $('#font-size-container').hide();
         $('#font-container').hide();
+        $('#update_color').css({ 'position':'absolute','left': '65%' ,'top': '82%' });
     }
     $('#item-font-color').val(pros.fill);
     var json = stage.toJSON();
@@ -236,7 +238,8 @@ $('.personal_img_add').on('click', function() {
     var type = $(this).data('type');
     var item_id = "#"+this.id;
     var item = $(item_id);
-    var action = item.html();
+    //var action = item.html();
+    action = $(this).data('action');
     if(type == 'rec'){
         if(action == 'add'){
             var rec = createRec(id);
@@ -249,17 +252,27 @@ $('.personal_img_add').on('click', function() {
                 // reset scale to 1
                 rec.scaleX(1);
                 rec.scaleY(1);
+                //console.log(rec.width);
+                console.log(images.personalImage.width);
+                rec.fillPatternScaleX(Math.max(5, rec.width() * rec.scaleX())/images.personalImage.width);
+                rec.fillPatternScaleY(Math.max(5, rec.height() * rec.scaleY())/images.personalImage.height);
               });
             elements_id.push(id);
             badge_elements.push(rec);
             var button_id = "#"+id;
             var button = $(button_id);
-            button.html('remove');
+            $(button_id + " i").removeClass('fas fa-plus');
+            $(button_id + " i").addClass('fas fa-minus');
+            $(this).data('action','remove');
+            //button.html('remove');
         }else{
             selectionRectangle.visible(false);
             var button_id = "#"+id;
             var button = $(button_id);
-            button.html('add');
+            //button.html('add');
+            $(button_id + " i").removeClass('fas fa-minus');
+            $(button_id + " i").addClass('fas fa-plus');
+            $(this).data('action','add');
             const index = elements_id.indexOf(id);
             if (index > -1) {
                 elements_id.splice(index, 1); // 2nd parameter means remove one item only
@@ -289,12 +302,18 @@ $('.personal_img_add').on('click', function() {
             badge_elements.push(sampleText);
             var button_id = "#"+id;
             var button = $(button_id);
-            button.html('remove');
+            $(button_id + " i").removeClass('fas fa-plus');
+            $(button_id + " i").addClass('fas fa-minus');
+            $(this).data('action','remove');
+            //button.html('remove');
         }else{
             selectionRectangle.visible(false);
             var button_id = "#"+id;
             var button = $(button_id);
-            button.html('add');
+            //button.html('add');
+            $(button_id + " i").removeClass('fas fa-minus');
+            $(button_id + " i").addClass('fas fa-plus');
+            $(this).data('action','add');
             const index = elements_id.indexOf(id);
             if (index > -1) {
                 elements_id.splice(index, 1); // 2nd parameter means remove one item only
@@ -332,7 +351,12 @@ function createRec(id){
         y: 10,
         width: 100,
         height: 90,
-        fill: 'red',
+        fillPatternImage: images.personalImage,
+        fillPatternScaleX: 100/images.personalImage.width,
+        fillPatternScaleY: 90/images.personalImage.height,
+        fillPatternRepeat: 'no-repeat',
+        //Image: "images/user_mng.png",
+
         name: id,
         draggable: true,
         type: id,
@@ -356,3 +380,29 @@ function createText(id){
     });
     return simpleText;
 }
+
+function loadImages(sources) {
+    var loadedImages = 0;
+    var numImages = 0;
+    // get num of sources
+    for (var src in sources) {
+      numImages++;
+    }
+    for (var src in sources) {
+      images[src] = new Image();
+      images[src].onload = function () {
+        // if (++loadedImages >= numImages) {
+        //   callback(images);
+        // }
+      };
+      images[src].src = sources[src];
+    }
+  }
+  var sources = {
+    personalImage: '/images/personalimage.png'
+  };
+  loadImages(sources);
+
+//   loadImages(sources, function (images) {
+//     draw(images);
+//   });
