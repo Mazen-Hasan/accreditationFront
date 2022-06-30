@@ -54,6 +54,11 @@
                                         <img src="{{ asset('images/preview.png') }}" alt="Add">
                                     </i>
                                 </a>
+                                <a href="{{route('badgeDesigner')}}" id="badge-designer" class="add-hbtn" title="Designer">
+                                    <i>
+                                        <img src="{{ asset('images/preview.png') }}" alt="Designer">
+                                    </i>
+                                </a>
                             </div>
                         </div>
                         <div class="table-responsive">
@@ -446,6 +451,5 @@
                 $('#div-txt-color').show();
             }
         });
-
     </script>
 @endsection

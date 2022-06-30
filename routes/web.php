@@ -323,6 +323,11 @@ Route::group(['middleware' => 'role:super-admin'], function () {
     Route::get('templatesData/{values}', 'App\Http\Controllers\TemplateController@getData1')->name('templatesData1');
     Route::get('/allEvents', [App\Http\Controllers\EventController::class, 'index'])->name('allEvents');
     Route::get('/eventComplete/{eventId}', [App\Http\Controllers\EventController::class, 'eventComplete'])->name('eventComplete');
+
+
+
+
+    Route::get('badge-designer',[App\Http\Controllers\TemplateBadgeFieldController::class, 'designer'])->name('badgeDesigner');
 });
 
 Route::group(['middleware' => 'role:security-officer'], function () {

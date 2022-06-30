@@ -79,4 +79,8 @@ class TemplateBadgeFieldController extends Controller
 
         return Response::json($field);
     }
+
+    public function designer(){
+        return view('pages.Template.template-badge-designer');
+    }
 }
