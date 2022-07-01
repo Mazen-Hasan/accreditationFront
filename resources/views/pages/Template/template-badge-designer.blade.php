@@ -134,7 +134,7 @@
                                                                     <input class="col-sm-3" id="item-font-family" type="text">
                                                                     <button class="col-sm-3" type="button" id="update_font" style="position:absolute;left:65%;top:75%;">Change</button>
                                                                 </div>
-                                                                <div class="form-group">
+                                                                <div class="form-group" id="color-container">
                                                                     <label class="control-label col-sm-4" style="text-align: right;clear: both;float:left;margin-right:15px;font-size:18px;margin-top: 10px;"  for="item-font-color">Color:</label>
                                                                     <input class="col-sm-3" id="item-font-color" type="text">
                                                                     <button class="col-sm-3" type="button" id="update_color" style="position:absolute;left:65%;top:86%;">Change</button>

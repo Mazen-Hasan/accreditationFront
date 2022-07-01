@@ -328,6 +328,11 @@ Route::group(['middleware' => 'role:super-admin'], function () {
 
 
     Route::get('badge-designer',[App\Http\Controllers\TemplateBadgeFieldController::class, 'designer'])->name('badgeDesigner');
+
+    Route::get('/roles', [App\Http\Controllers\RoleController::class, 'index'])->name('roles');
+    Route::resource('RoleController', 'App\Http\Controllers\RoleController');
+    Route::get('RoleController/destroy/{id}', 'App\Http\Controllers\RoleController@destroy');
+    Route::get('RoleController/changeStatus/{id}/{status}', 'App\Http\Controllers\RoleController@changeStatus');
 });
 
 Route::group(['middleware' => 'role:security-officer'], function () {

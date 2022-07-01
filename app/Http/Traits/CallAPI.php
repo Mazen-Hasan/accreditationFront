@@ -11,9 +11,9 @@ trait CallAPI
         $content_type = env("API_CONTENT_TYPE", "application/json");
         $accept = env("API_ACCEPT", "application/json");
         $accept_language = env("API_ACCEPT_LANGUAGE", "1");
-//        $token = '3d7a48e4-f1d1-11ec-be2a-aae9fe74b1d2';
+           $token = '3d7a48e4-f1d1-11ec-be2a-aae9fe74b1d2';
 
-        $token = 'de74f21a-f7e8-11ec-a655-e8d8d1fd9cf6';
+        // $token = 'de74f21a-f7e8-11ec-a655-e8d8d1fd9cf6';
 
         $client = new \GuzzleHttp\Client([
             'base_uri' => $base_url,

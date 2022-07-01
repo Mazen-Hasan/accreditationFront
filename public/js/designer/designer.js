@@ -216,16 +216,19 @@ function showPros(pros,obj) {
     $('#item-height').val(Math.round(obj.height()));
     if(pros.kind == 'text'){
         $('#font-size-container').show();
-        $('#item-font-size').val(pros.fontSize);
+        $('#item-font-size').val(Math.round(pros.fontSize));
         $('#font-container').show();
         $('#item-font-family').val(pros.fontFamily);
-        $('#update_color').css({ 'position':'absolute','left': '65%' ,'top': '86%' });
+        $('#color-container').show();
+        $('#item-font-color').val(pros.fill);
+        //$('#update_color').css({ 'position':'absolute','left': '65%' ,'top': '86%' });
     }else{
         $('#font-size-container').hide();
         $('#font-container').hide();
-        $('#update_color').css({ 'position':'absolute','left': '65%' ,'top': '82%' });
+        $('#color-container').hide();
+        //$('#update_color').css({ 'position':'absolute','left': '65%' ,'top': '82%' });
     }
-    $('#item-font-color').val(pros.fill);
+    //$('#item-font-color').val(pros.fill);
     var json = stage.toJSON();
     console.log(json);
 
@@ -356,7 +359,6 @@ function createRec(id){
         fillPatternScaleY: 90/images.personalImage.height,
         fillPatternRepeat: 'no-repeat',
         //Image: "images/user_mng.png",
-
         name: id,
         draggable: true,
         type: id,

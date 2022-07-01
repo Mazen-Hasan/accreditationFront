@@ -115,6 +115,15 @@
                 <span class="menu-title">Users</span>
             </a>
         </li>
+        <li class="nav-item">
+            <a class="nav-link {{ str_contains( Request::route()->getName(),'roles') =="1" ? "active" : "" }}"
+               href="{{ route('roles') }}">
+                <i class="logout">
+                    <img src="{{ asset('images/user_mng.png') }}" alt="Users">
+                </i>
+                <span class="menu-title">Roles</span>
+            </a>
+        </li>
         @endrole
         @role('event-admin')
         <li class="nav-item">
