@@ -748,7 +748,7 @@ class TemplateFormController extends Controller
         $textfield .= '<label>' . $label . "</label></div>";
         $button = '<a href="javascript:void(0)" data-toggle="tooltip" data-label="' . $label . '"  data-src="' . $value . '" data-original-title="Preview" class="edit btn btn-danger preview-badge">Preview</a>';
         $textfield .= '<div class="col-md-6">' . $button . '</div>';
-        $textfield .= '</div></div><div class="col-md-6"></div></div></div>';
+        $textfield .= '</div></div><div class="col-md-6"></div></div>';
 
         return $textfield;
     }

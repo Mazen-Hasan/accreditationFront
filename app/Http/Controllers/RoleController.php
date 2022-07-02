@@ -29,7 +29,7 @@ class RoleController extends Controller
                         $button .= '<a href="javascript:void(0);" id="activate-type" data-toggle="tooltip" data-original-title="Delete" data-id="' . $data->id . '" title="Activate"><i class="fas fa-check-circle"></i></a>';
                     }
                     $button .= '&nbsp;&nbsp;';
-                    $button .= '<a href="javascript:void(0)" id="role-permissions" data-toggle="tooltip"  data-id="' . $data->id . '" data-original-title="Permissions" title="Permissions"><i class="fas fa-list-alt""></i></a>';
+                    $button .= '<a  href="' . route('getRolePermissions') . '" id="role-permissions" data-toggle="tooltip"  data-id="' . $data->id . '" data-original-title="Permissions" title="Permissions"><i class="fas fa-list-alt""></i></a>';
                     return $button;
                 })
                 ->rawColumns(['action'])
@@ -139,5 +139,33 @@ class RoleController extends Controller
         $data = $result['data'];
         $data = json_decode(json_encode($data));
         return Response::json($data);
+    }
+
+    public function getRolePermissions()
+    {
+        // if (request()->ajax()) {
+        //     $body = [];
+        //     $result = CallAPI::postAPI('eventType/getAll',$body);
+        //     $errCode = $result['errCode'];
+        //     $errMsg = $result['errMsg'];
+        //     $data = $result['data'];
+        //     $data = json_decode(json_encode($data));
+        //     return datatables()->of($data->data)
+        //         ->addColumn('action', function ($data) {
+        //             $button = '<a href="javascript:void(0)" id="edit-type" data-toggle="tooltip"  data-id="' . $data->id . '" data-original-title="Edit" title="Edit"><i class="fas fa-edit"></i></a>';
+        //             $button .= '&nbsp;&nbsp;';
+        //             if ($data->status == 1) {
+        //                 $button .= '<a href="javascript:void(0);" id="deActivate-type" data-toggle="tooltip" data-original-title="Delete" data-id="' . $data->id . '" title="Deactivate"><i class="fas fa-ban"></i></a>';
+        //             } else {
+        //                 $button .= '<a href="javascript:void(0);" id="activate-type" data-toggle="tooltip" data-original-title="Delete" data-id="' . $data->id . '" title="Activate"><i class="fas fa-check-circle"></i></a>';
+        //             }
+        //             $button .= '&nbsp;&nbsp;';
+        //             $button .= '<a href="javascript:void(0)" id="role-permissions" data-toggle="tooltip"  data-id="' . $data->id . '" data-original-title="Permissions" title="Permissions"><i class="fas fa-list-alt""></i></a>';
+        //             return $button;
+        //         })
+        //         ->rawColumns(['action'])
+        //         ->make(true);
+        // }
+        return view('pages.Role.role-permissions');
     }
 }
