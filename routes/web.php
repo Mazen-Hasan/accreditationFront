@@ -333,7 +333,7 @@ Route::group(['middleware' => 'role:super-admin'], function () {
     Route::resource('RoleController', 'App\Http\Controllers\RoleController');
     Route::get('RoleController/destroy/{id}', 'App\Http\Controllers\RoleController@destroy');
     Route::get('RoleController/changeStatus/{id}/{status}', 'App\Http\Controllers\RoleController@changeStatus');
-    Route::get('/role-permissions', [App\Http\Controllers\RoleController::class, 'getRolePermissions'])->name('getRolePermissions');
+    Route::get('/role-permissions/{roleId}/{roleName}', [App\Http\Controllers\RoleController::class, 'getRolePermissions'])->name('getRolePermissions');
 });
 
 Route::group(['middleware' => 'role:security-officer'], function () {

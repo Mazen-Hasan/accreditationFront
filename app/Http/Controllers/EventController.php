@@ -446,7 +446,7 @@ class EventController extends Controller
                         $event = Event::where(['id'=>$post->id])->first();
                         // NotificationController::sendAlertNotification($event_admin, 0, $event->name . ':' . 'Event assignment', Route('eventCompanies' , [$post->id]));
 
-                        $notification_type = Config::get('enums.notification_types.EIN');
+                        $notification_type = Config::get('enums.notification_types.AEA');
                         NotificationController::sendNotification($notification_type, $event->name, '', $event_admin, 0,
                         $event->name . ':' . 'Event assignment', Route('eventCompanies', [$post->id]));
                 }
@@ -460,7 +460,7 @@ class EventController extends Controller
                         $event = Event::where(['id'=>$post->id])->first();
                         // NotificationController::sendAlertNotification($security_officer, 0, $event->name . ':' . 'Event assignment', Route('securityOfficerCompanies' , [$post->id]));
 
-                        $notification_type = Config::get('enums.notification_types.EIN');
+                        $notification_type = Config::get('enums.notification_types.AEA');
                         NotificationController::sendNotification($notification_type, $event->name, '', $security_officer, 0,
                         $event->name . ':' . 'Event assignment', Route('securityOfficerCompanies', [$post->id]));
                 }

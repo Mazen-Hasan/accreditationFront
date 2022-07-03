@@ -49,7 +49,7 @@
                                 <thead>
                                 <tr>
                                     <th>ID</th>
-                                    <th>Role</th>
+                                    <th>Name</th>
                                     <th style="color: black">Status</th>
                                     <th>Action</th>
                                 </tr>

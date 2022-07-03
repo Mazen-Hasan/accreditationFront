@@ -159,7 +159,7 @@ class DataEntryController extends Controller
                         [
                          	'is_active' => $request->status
                         ]);
-            
+
             }
         }
         return Response::json($post);
@@ -280,7 +280,7 @@ class DataEntryController extends Controller
                 $addable = 3;
             }
         }
-    
+
         $dataTableColumuns = array();
 
         $where = array('id' => $companyId);
@@ -456,7 +456,7 @@ class DataEntryController extends Controller
                 $participants = DB::select('select t.* , c.* from `temp_' . $eventId . '` t inner join company_staff c on t.id = c.id where c.company_id = ?'. $whereCondition." LIMIT ". $size. " OFFSET ". $skip,[$companyId]);
             }else{
                 $skip = $size * $values;
-                //$query = 
+                //$query =
                 $participants = DB::select('select t.* , c.* from `temp_' . $eventId . '` t inner join company_staff c on t.id = c.id where c.company_id = ? LIMIT '. $size. " OFFSET ". $skip,[$companyId]);
                 // var_dump($participants);
                 // exit;
@@ -511,11 +511,23 @@ class DataEntryController extends Controller
             switch ($templateField->slug) {
                 case 'text':
                     if ($participant_id == 0) {
-                        if (strtolower($templateField->label_en) == 'company' or strtolower($templateField->label_en) == 'event') {
+//                        if (strtolower($templateField->label_en) == 'company' or strtolower($templateField->label_en) == 'event') {
+//                            if (strtolower($templateField->label_en) == 'company') {
+//                                $form .= $this->createHiddenField(str_replace(' ', '_', $templateField->label_en), $templateField->label_en, $company->name);
+//                            } else {
+//                                $form .= $this->createHiddenField(str_replace(' ', '_', $templateField->label_en), $templateField->label_en, $event->name);
+//                            }
+//                            break;
+//                        }
+
+                        if (strtolower($templateField->label_en) == 'company' or strtolower($templateField->label_en) == 'event' or strtolower($templateField->label_en) == 'event date') {
                             if (strtolower($templateField->label_en) == 'company') {
                                 $form .= $this->createHiddenField(str_replace(' ', '_', $templateField->label_en), $templateField->label_en, $company->name);
-                            } else {
+                            } elseif  (strtolower($templateField->label_en) == 'event'){
                                 $form .= $this->createHiddenField(str_replace(' ', '_', $templateField->label_en), $templateField->label_en, $event->name);
+                            }
+                            else{
+                                $form .= $this->createHiddenField(str_replace(' ', '_', $templateField->label_en), $templateField->label_en, 'From: ' . $event->event_start_date . ', To: '. $event->event_end_date);
                             }
                             break;
                         }
@@ -586,7 +598,7 @@ class DataEntryController extends Controller
                                 $options [] = $option;
                             }
                             $form .= $this->createSelect(str_replace(' ', '_', $templateField->label_en), $templateField->label_en, $options, $templateField->value);
-                        } 
+                        }
                     }
                     break;
 
@@ -793,7 +805,7 @@ class DataEntryController extends Controller
         $staff = CompanyStaff::updateOrCreate(['id' => $companyStaff->id],
             ['identifier'=> '#'. md5($request->event_id.'-'.$request->company_id.'-'.$companyStaff->id)
             ]);
-    
+
         $where = array('id' => $request->event_id);
         $event = Event::where($where)->get()->first();
         $query = "update templates t set t.is_locked = 1 where t.id = '" . $event->event_form."'";
@@ -811,7 +823,7 @@ class DataEntryController extends Controller
                             DB::update($query,[$staffdata->value,$request->company_id,$request->event_id]);
                             $query = 'update company_accreditaion_categories set inserted = inserted + 1 where accredit_cat_id = ? and company_id = ? and event_id = ?';
                             DB::update($query,[$value,$request->company_id,$request->event_id]);
-                        }  
+                        }
                     }
                     $query = 'update staff_data s set s.value = "' . $value . '" where s.staff_id = ' . $companyStaff->id . ' and s.key ="' . $key . '" ';
                     DB::update($query);

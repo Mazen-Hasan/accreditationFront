@@ -60,11 +60,14 @@ class TemplateFormController extends Controller
             switch ($templateField->slug) {
                 case 'text':
                     if ($participant_id == 0) {
-                        if (strtolower($templateField->label_en) == 'company' or strtolower($templateField->label_en) == 'event') {
+                        if (strtolower($templateField->label_en) == 'company' or strtolower($templateField->label_en) == 'event' or strtolower($templateField->label_en) == 'event date') {
                             if (strtolower($templateField->label_en) == 'company') {
                                 $form .= $this->createHiddenField(str_replace(' ', '_', $templateField->label_en), $templateField->label_en, $company->name);
-                            } else {
+                            } elseif  (strtolower($templateField->label_en) == 'event'){
                                 $form .= $this->createHiddenField(str_replace(' ', '_', $templateField->label_en), $templateField->label_en, $event->name);
+                            }
+                            else{
+                                $form .= $this->createHiddenField(str_replace(' ', '_', $templateField->label_en), $templateField->label_en, 'From: ' . $event->event_start_date . ', To: '. $event->event_end_date);
                             }
                             break;
                         }

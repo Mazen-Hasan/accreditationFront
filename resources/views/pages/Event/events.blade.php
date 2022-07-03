@@ -316,7 +316,7 @@
             popupParent: document.querySelector('body'),
 
             // sets 10 rows per page (default is 100)
-            paginationPageSize: 2,
+            paginationPageSize: 10,
             onFirstDataRendered: onFirstDataRendered,
             rowSelection: 'single',
             tooltipShowDelay: 0,

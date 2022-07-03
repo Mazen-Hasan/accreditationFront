@@ -124,7 +124,7 @@ class EventAdminController extends Controller
             [
                 'status' => 3
             ]);
-    
+
     	$focal_point = DB::select('select * from focal_points f where f.id = ?', [$post->focal_point_id]);
         $event = Event::where(['id'=>$eventId])->first();
         $company = Company::where(['id'=>$companyId])->first();
@@ -133,7 +133,7 @@ class EventAdminController extends Controller
     	$notification_type = Config::get('enums.notification_types.EIN');
         NotificationController::sendNotification($notification_type, $event->name, $company->name, $focal_point[0]->account_id, 0,
             $event->name . ': ' . $company->name . ': ' . 'Event invitation', Route('companyParticipants' , [$companyId, $eventId]));
-        
+
         return Response::json($post);
     }
 
@@ -315,7 +315,7 @@ class EventAdminController extends Controller
                     $button = '';
                     $button .= '<a href="' . route('participantDetails', $data->id) . '" data-toggle="tooltip"  id="participant-details" data-id="' . $data->id . '" data-original-title="Edit" title="Details"><i class="far fa-list-alt"></i></a>';
                     $button .= '&nbsp;&nbsp;';
-                    if($event->status < 3){    
+                    if($event->status < 3){
                         switch ($data->status) {
                             case 2:
                                 $button .= '<a href="javascript:void(0)" data-toggle="tooltip" id="approve"  data-id="' . $data->id . '" data-original-title="Edit" title="Approve"><i class="fas fa-vote-yea"></i></a>';
@@ -390,18 +390,18 @@ class EventAdminController extends Controller
             // NotificationController::sendAlertNotification($focal_point[0]->account_id, $staffId, $event->name . ': ' . $company->name . ': ' . 'Participant approved', Route('templateFormDetails' , [$staffId]));
 
         	app('App\Http\Controllers\GenerateBadgeController')->generate($staffId);
-        
+
         	$notification_type = Config::get('enums.notification_types.PAP');
             NotificationController::sendNotification($notification_type, $event->name, $company->name, $focal_point[0]->account_id, $staffId,
                 $event->name . ': ' . $company->name . ': ' . 'Participant approved',
                 Route('templateFormDetails' , [$staffId]));
-        
+
         } else {
             if ($approval == 3) {
             	DB::update('update company_staff set status = ? where id = ?', [1, $staffId]);
                 foreach ($event_security_officers as $event_security_officer){
                     // NotificationController::sendAlertNotification($event_security_officer->security_officer_id, $staffId, $event->name . ': ' . $company->name . ': ' . 'Participant approval', Route('securityParticipantDetails' , $staffId));
-                	
+
                 	$notification_type = Config::get('enums.notification_types.PAP');
                     NotificationController::sendNotification($notification_type, $event->name, $company->name, $event_security_officer->security_officer_id, $staffId,
                         $event->name . ': ' . $company->name . ': ' . 'Participant approval',
@@ -529,7 +529,7 @@ class EventAdminController extends Controller
 
         	$notification_type = Config::get('enums.notification_types.PRE');
             NotificationController::sendNotification($notification_type, $event->name, $company->name, $focalPoint->account_id, $staffId,
-                $event->name . ': ' . $company->name . ': ' . 'Participant rejected', 
+                $event->name . ': ' . $company->name . ': ' . 'Participant rejected',
                 Route('templateFormDetails' , $staffId));
         } else {
             if ($approval == 3) {
@@ -537,7 +537,7 @@ class EventAdminController extends Controller
             	// NotificationController::sendAlertNotification($focalPoint->account_id, $staffId, $event->name . ': ' . $company->name . ': ' . 'Participant rejected', Route('templateFormDetails' , $staffId));
             	$notification_type = Config::get('enums.notification_types.PRE');
                 NotificationController::sendNotification($notification_type, $event->name, $company->name, $focalPoint->account_id, $staffId,
-                    $event->name . ': ' . $company->name . ': ' . 'Participant rejected', 
+                    $event->name . ': ' . $company->name . ': ' . 'Participant rejected',
                     Route('templateFormDetails' , $staffId));
             }
         }
@@ -553,7 +553,7 @@ class EventAdminController extends Controller
 
         $eventWhere = array('id' => $eventId);
         $event = Event::where($eventWhere)->first();
-    
+
         $companyWhere = array('id' => $companyId);
         $company = Company::where($companyWhere)->first();
 
@@ -566,20 +566,20 @@ class EventAdminController extends Controller
             DB::update('update company_staff set status = ? where id = ?', [8, $staffId]);
             DB::update('update company_staff set event_admin_reject_reason = ? where id = ?', [$reason, $staffId]);
         	// NotificationController::sendAlertNotification($focalPoint->account_id, $staffId, $event->name . ': ' . $company->name . ': ' . 'Participant returend for correction', Route('templateFormDetails' , $staffId));
-			
+
         	$notification_type = Config::get('enums.notification_types.PRC');
             NotificationController::sendNotification($notification_type, $event->name, $company->name, $focalPoint->account_id, $staffId,
-                $event->name . ': ' . $company->name . ': ' . 'Participant returned for correction', 
+                $event->name . ': ' . $company->name . ': ' . 'Participant returned for correction',
                 Route('templateFormDetails' , $staffId));
         } else {
             if ($approval == 3) {
                 DB::update('update company_staff set status = ? where id = ?', [8, $staffId]);
                 DB::update('update company_staff set event_admin_reject_reason = ? where id = ?', [$reason, $staffId]);
             	// NotificationController::sendAlertNotification($focalPoint->account_id, $staffId, $event->name . ': ' . $company->name . ': ' . 'Participant returend for correction', Route('templateFormDetails' , $staffId));
-            	
+
             	$notification_type = Config::get('enums.notification_types.PRC');
                 NotificationController::sendNotification($notification_type, $event->name, $company->name, $focalPoint->account_id, $staffId,
-                    $event->name . ': ' . $company->name . ': ' . 'Participant returned for correction', 
+                    $event->name . ': ' . $company->name . ': ' . 'Participant returned for correction',
                     Route('templateFormDetails' , $staffId));
             }
         }
@@ -843,7 +843,7 @@ public function createStatusFieldLabel($label, $value)
             }
         }
 
-    
+
     	$selectfield = '<div class="col-md-6"><div class="form-group col">';
         $selectfield .= '<label>' . $label . '</label><div class="col-sm-12">';
         $selectfield .= '<input type="text" value="'. $selectValue .'" disabled/>';
@@ -912,11 +912,22 @@ public function createStatusFieldLabel($label, $value)
             switch ($templateField->slug) {
                 case 'text':
                     if ($participant_id == 0) {
-                        if (strtolower($templateField->label_en) == 'company' or strtolower($templateField->label_en) == 'event') {
+//                        if (strtolower($templateField->label_en) == 'company' or strtolower($templateField->label_en) == 'event') {
+//                            if (strtolower($templateField->label_en) == 'company') {
+//                                $form .= $this->createHiddenField(str_replace(' ', '_', $templateField->label_en), $templateField->label_en, $company->name);
+//                            } else {
+//                                $form .= $this->createHiddenField(str_replace(' ', '_', $templateField->label_en), $templateField->label_en, $event->name);
+//                            }
+//                            break;
+//                        }
+                        if (strtolower($templateField->label_en) == 'company' or strtolower($templateField->label_en) == 'event' or strtolower($templateField->label_en) == 'event date') {
                             if (strtolower($templateField->label_en) == 'company') {
                                 $form .= $this->createHiddenField(str_replace(' ', '_', $templateField->label_en), $templateField->label_en, $company->name);
-                            } else {
+                            } elseif  (strtolower($templateField->label_en) == 'event'){
                                 $form .= $this->createHiddenField(str_replace(' ', '_', $templateField->label_en), $templateField->label_en, $event->name);
+                            }
+                            else{
+                                $form .= $this->createHiddenField(str_replace(' ', '_', $templateField->label_en), $templateField->label_en, 'From: ' . $event->event_start_date . ', To: '. $event->event_end_date);
                             }
                             break;
                         }
@@ -987,7 +998,7 @@ public function createStatusFieldLabel($label, $value)
                                 $options [] = $option;
                             }
                             $form .= $this->createSelect(str_replace(' ', '_', $templateField->label_en), $templateField->label_en, $options, $templateField->value);
-                        } 
+                        }
                     }
                     break;
 
@@ -1181,7 +1192,7 @@ public function createStatusFieldLabel($label, $value)
         $status = 6;
         $approval_option = $event->approval_option;
         if($approval_option != 1){
-            $status = 1; 
+            $status = 1;
         }
         $companyStaff = CompanyStaff::updateOrCreate(['id' => $participant_id],
             ['event_id' => $request->event_id,
@@ -1199,7 +1210,7 @@ public function createStatusFieldLabel($label, $value)
         $staff = CompanyStaff::updateOrCreate(['id' => $companyStaff->id],
             ['identifier'=> '#'. md5($request->event_id.'-'.$request->company_id.'-'.$companyStaff->id)
             ]);
-    
+
         $where = array('id' => $request->event_id);
         $event = Event::where($where)->get()->first();
         $query = "update templates t set t.is_locked = 1 where t.id = '" . $event->event_form."'";
@@ -1217,7 +1228,7 @@ public function createStatusFieldLabel($label, $value)
                             DB::update($query,[$staffdata->value,$request->company_id,$request->event_id]);
                             $query = 'update company_accreditaion_categories set inserted = inserted + 1 where accredit_cat_id = ? and company_id = ? and event_id = ?';
                             DB::update($query,[$value,$request->company_id,$request->event_id]);
-                        }  
+                        }
                     }
                     $query = 'update staff_data s set s.value = "' . $value . '" where s.staff_id = ' . $companyStaff->id . ' and s.key ="' . $key . '" ';
                     DB::update($query);
@@ -1297,7 +1308,7 @@ public function createStatusFieldLabel($label, $value)
         if ($approval_option != 1) {
             $event_security_officers = DB::select('select * from event_security_officers_view e where e.id=?',[$event->id]);
             //DB::update('update company_staff set status = ? where id = ?', [1, $companyStaff->id]);
-            foreach ($event_security_officers as $event_security_officer){                
+            foreach ($event_security_officers as $event_security_officer){
                 $notification_type = Config::get('enums.notification_types.PAP');
                 NotificationController::sendNotification($notification_type, $event->name, $company->name, $event_security_officer->security_officer_id, $companyStaff->id,
                     $event->name . ': ' . $company->name . ': ' . 'Participant approval',
