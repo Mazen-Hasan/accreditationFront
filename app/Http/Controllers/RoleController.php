@@ -179,5 +179,6 @@ class RoleController extends Controller
                  ->make(true);
          }
         return view('pages.Role.role-permissions')->with('role_id',$role_id)->with('role_name',$role_name);
+        // return view('pages.Role.role-permissions');
     }
 }
