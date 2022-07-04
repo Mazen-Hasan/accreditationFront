@@ -25,7 +25,7 @@
                                     <a class="url-nav" href="{{route('templates')}}">
                                         <span>Template:</span>
                                     </a>
-                                    {{$template->name}} / Fields
+                                    {{$template_name}} / Fields
                                 </p>
                             </div>
                         	<div class="col-md-1 align-content-md-center">

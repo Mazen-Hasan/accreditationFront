@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Traits\CallAPI;
 use App\Mail\EventAdminAssign;
 use App\Models\FieldType;
 use App\Models\PreDefinedFieldElement;
@@ -76,8 +77,15 @@ class TemplateController extends Controller
      */
     public function index()
     {
+        $body = [];
+        $result = CallAPI::postAPI('registrationForm/getAll',$body);
+        $errCode = $result['errCode'];
+        $errMsg = $result['errMsg'];
+        $data = $result['data'];
+        $data = json_decode(json_encode($data['data']));
+
         if (request()->ajax()) {
-            return datatables()->of(Template::latest()->get())
+            return datatables()->of($data)
                 ->addColumn('action', function ($data) {
                     $button = '';
                     if ($data->is_locked == 0) {

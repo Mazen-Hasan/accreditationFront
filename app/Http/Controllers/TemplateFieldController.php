@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Traits\CallAPI;
 use App\Models\FieldType;
 use App\Models\Template;
 use App\Models\TemplateField;
@@ -19,21 +20,28 @@ class TemplateFieldController extends Controller
     public function index($template_id)
     {
         if (request()->ajax()) {
-            $templateFields = DB::select('select * from template_fields_view v where v.template_id = ?', [$template_id]);
-            return datatables()->of($templateFields)
+//            $templateFields = DB::select('select * from template_fields_view v where v.template_id = ?', [$template_id]);
+
+            $body = [
+                'registration_form_id' =>  $template_id
+            ];
+            $result = CallAPI::postAPI('registrationFormField/getAll',$body);
+            $errCode = $result['errCode'];
+            $errMsg = $result['errMsg'];
+            $data = $result['data'];
+            $data = json_decode(json_encode($data['data']));
+
+            return datatables()->of($data)
                 ->addColumn('action', function ($data) {
                     $button = '';
-                    if ($data->is_locked == 0) {
-                        if (strtolower($data->label_en) != 'company' and strtolower($data->label_en) != 'event' and strtolower($data->label_en) != 'accreditation category'
-                            and strtolower($data->label_en) != 'personal image' and strtolower($data->label_en) != 'full name' and strtolower($data->label_en) != 'event date') {
+                    if ($data->can_edit == 1) {
                             $button = '<a href="javascript:void(0)" data-toggle="tooltip" id="edit-field"  data-id="' . $data->id . '" data-original-title="Edit" title="Edit"><i class="fas fa-edit"></i></a>';
                             $button .= '&nbsp;&nbsp;';
                             $button .= '<a href="javascript:void(0)" data-toggle="tooltip" id="delete-field"  data-id="' . $data->id . '" data-original-title="Delete" title="Delete"><i class="far fa-trash-alt"></i></a>';
                             $button .= '&nbsp;&nbsp;';
-                        }
                     }
 
-                    if ($data->slug == 'select') {
+                    if ($data->details == 1) {
                         $button .= '<a href="' . route('fieldElements', $data->id) . '" data-toggle="tooltip" data-original-title="Delete" data-id="' . $data->id . '" title="Elements"><i class="far fa-list-alt"></i></a>';
                     }
                     return $button;
