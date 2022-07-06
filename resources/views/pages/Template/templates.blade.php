@@ -131,6 +131,7 @@
             </div>
         </div>
     </div>
+
     <div class="modal" id="loader-modal" tabindex="-1" data-backdrop="static" data-keyboard="false"
          role="dialog" aria-hidden="true">
         <div class="modal-dialog" role="document" style="width: 250px">
@@ -144,6 +145,28 @@
                             <label class="loading">
                                 loading...
                             </label>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade" id="error-pop-up-modal" tabindex="-1" data-bs-backdrop="static"
+         data-bs-keyboard="false" role="dialog" aria-hidden="true">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="errorTitle">Error</h5>
+                </div>
+                <div class="modal-body">
+                    <div>
+                        <label class="col-sm-12 confirm-text" id="errorText"></label>
+                    </div>
+                    <div class="modal-footer">
+                        <div class="col-sm-12">
+                            <button type="submit" class="btn-cancel" data-dismiss="modal" value="create">OK
+                            </button>
                         </div>
                     </div>
                 </div>
@@ -215,16 +238,35 @@
             $('body').on('click', '#edit-template', function () {
                 var template_id = $(this).data('id');
                 $('#loader-modal').modal('show');
-                $.get('templateController/' + template_id + '/edit', function (data) {
+
+                var url = "{{ route('templateGetById', ":id") }}";
+                url = url.replace(':id', template_id);
+
+                $.get( url, function (data) {
                     $('#loader-modal').modal('hide');
-                    $('#name-error').hide();
-                    $('#modalTitle').html("Edit Registration Form");
-                    $('#btn-save').val("edit-template");
-                    $('#template-modal').modal('show');
-                    $('#template_id').val(data.id);
-                    $('#name').val(data.name);
-                    $('#status').val(data.status);
                 })
+                    .done(function (data) {
+                        $('#loader-modal').modal('hide');
+                        $('#templateForm').trigger("reset");
+
+                        if (data['errCode'] == '1') {
+                            $('#template_id').val(template_id);
+                            $('#name-error').hide();
+                            $('#modalTitle').html("Edit Registration Form");
+                            $('#btn-save').val("edit-template");
+                            $('#template-modal').modal('show');
+                            $('#name').val(data['data']['name']);
+                            $('#status').val(data['data']['status']);
+                        } else {
+                            $('#errorText').html(data['errMsg']);
+                            $('#error-pop-up-modal').modal('show');
+                        }
+                    })
+                    .fail(function (data) {
+                        $('#template-modal').modal('hide');
+                        $('#loader-modal').modal('hide');
+                        $('#btn-save').html('Save Changes');
+                    });
             });
 
             $('body').on('click', '#activate-template', function () {
@@ -286,12 +328,18 @@
                                 url: url,
                                 success: function (data) {
                                     $('#loader-modal').modal('hide');
-                                    var oTable = $('#laravel_datatable').dataTable();
-                                    oTable.fnDraw(false);
+                                    if (data['errCode'] == '1') {
+                                        var oTable = $('#laravel_datatable').dataTable();
+                                        oTable.fnDraw(false);
+                                    } else {
+                                        $('#errorText').html(data['errMsg']);
+                                        $('#error-pop-up-modal').modal('show');
+                                    }
                                 },
                                 error: function (data) {
                                     $('#loader-modal').modal('hide');
-                                    console.log('Error:', data);
+                                    $('#errorText').html(data['errMsg']);
+                                    $('#error-pop-up-modal').modal('show');
                                 }
                             });
                         } else {
@@ -304,12 +352,18 @@
                                 url: url,
                                 success: function (data) {
                                     $('#loader-modal').modal('hide');
-                                    var oTable = $('#laravel_datatable').dataTable();
-                                    oTable.fnDraw(false);
+                                    if (data['errCode'] == '1') {
+                                        var oTable = $('#laravel_datatable').dataTable();
+                                        oTable.fnDraw(false);
+                                    } else {
+                                        $('#errorText').html(data['errMsg']);
+                                        $('#error-pop-up-modal').modal('show');
+                                    }
                                 },
                                 error: function (data) {
                                     $('#loader-modal').modal('hide');
-                                    console.log('Error:', data);
+                                    $('#errorText').html(data['errMsg']);
+                                    $('#error-pop-up-modal').modal('show');
                                 }
                             });
                         }
@@ -326,7 +380,6 @@
         });
 
         if ($("#templateForm").length > 0) {
-            console.log('Sending...');
             $("#templateForm").validate({
                 submitHandler: function (form) {
                     $('#btn-save').html('Sending..');
@@ -337,19 +390,29 @@
                         type: "POST",
                         dataType: 'json',
                         success: function (data) {
-                            $('#loader-modal').modal('hide');
-                            $('#templateForm').trigger("reset");
                             $('#template-modal').modal('hide');
-                            $('#btn-save').html('Save Changes');
-                            var oTable = $('#laravel_datatable').dataTable();
-                            oTable.fnDraw(false);
+                            if(data['errCode']==1){
+                                $('#loader-modal').modal('hide');
+                                $('#templateForm').trigger("reset");
+                                $('#template-modal').modal('hide');
+                                var oTable = $('#laravel_datatable').dataTable();
+                                oTable.fnDraw(false);
+                            }
+                            else{
+                                $('#loader-modal').modal('hide');
+                                $('#templateForm').trigger("reset");
+                                $('#errorTitle').html('Error');
+                                $('#errorText').html(data['errMsg']);
+                                $('#error-pop-up-modal').modal('show');
+                            }
                         },
                         error: function (data) {
+                            $('#template-modal').modal('hide');
                             $('#loader-modal').modal('hide');
-                            console.log('Error:', data);
                             $('#btn-save').html('Save Changes');
                         }
                     });
+                    $('#btn-save').html('Save');
                 }
             })
         }

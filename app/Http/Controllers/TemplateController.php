@@ -3,27 +3,19 @@
 namespace App\Http\Controllers;
 
 use App\Http\Traits\CallAPI;
-use App\Mail\EventAdminAssign;
+use App\Http\Traits\ParseAPIResponse;
 use App\Models\FieldType;
-use App\Models\PreDefinedFieldElement;
 use App\Models\SelectOption;
 use App\Models\Template;
-use App\Models\TemplateField;
-use App\Models\TemplateFieldElement;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Response;
 
-use Illuminate\Support\Facades\Mail;
-use Intervention\Image\Size;
 
 class TemplateController extends Controller
 {
 
 	public function getData(Request $request){
-//        var_dump($request);
-
         $templates =  Template::latest()->take(6)->get();
         return Response::json($request);
     }
@@ -70,19 +62,15 @@ class TemplateController extends Controller
         ));
         //return Response::json($templates);
     }
-    /**
-     * Display a listing of the resource.
-     *
-     * @return \Illuminate\Http\Response
-     */
+
     public function index()
     {
         $body = [];
-        $result = CallAPI::postAPI('registrationForm/getAll',$body);
-        $errCode = $result['errCode'];
-        $errMsg = $result['errMsg'];
-        $data = $result['data'];
-        $data = json_decode(json_encode($data['data']));
+        $url = 'registrationForm/getAll';
+
+        $result = ParseAPIResponse:: parseResult( CallAPI::postAPI($url, $body));
+
+        $data = json_decode(json_encode($result['data']['data']));
 
         if (request()->ajax()) {
             return datatables()->of($data)
@@ -117,133 +105,65 @@ class TemplateController extends Controller
         return view('pages.Template.templates');
     }
 
-    /**
-     * Show the form for editing the specified resource.
-     *
-     */
-    public function templateAdd()
-    {
-        $fieldTypes = FieldType::get()->all();
-
-        $fieldTypesArray = array();
-        foreach ($fieldTypes as $fieldType) {
-            $fieldTypesSelectOption = new SelectOption($fieldType->id, $fieldType->name);
-            $fieldTypesArray[] = $fieldTypesSelectOption;
-        }
-
-        return view('pages.Template.template-add')->with('filedTypes', $fieldTypesArray);
-    }
-
-
-    /**
-     * Store a newly created resource in storage.
-     *
-     * @param Request $request
-     * @return \Illuminate\Http\Response
-     */
-
     public function store(Request $request)
     {
-
-//        $info = array(
-//            'name' => "Alex"
-//        );
-//
-//        Mail::send([], $info, function ($message)
-//        {
-//            $message->to('e.mazen.hasan@gmail.com', 'Mazen')
-//                ->subject('Basic test eMail from Laravel.');
-//            $message->from('admin@accrediation.com', 'Admin');
-//        });
-
-//        echo "Successfully sent the email";
-
         $template_id = $request->template_id;
-        $post = Template::updateOrCreate(['id' => $template_id],
-            ['name' => $request->name,
-                'status' => $request->status,
-                'is_locked' => $request->has('locked'),
-                'creator' => Auth::user()->id
-            ]);
+        $url = 'registrationForm/create';
 
+        $body = [
+            "name" => $request->name,
+            "status" => $request->status
+        ];
 
-        if ($template_id == null) {
-
-            $query = 'select p.id, p.label_ar, p.label_en, p.mandatory, p.min_char, p.max_char, p.field_order, p.field_type_id  from pre_defined_fields  p';
-            $pre_defined_fields_res = DB::select($query);
-
-
-            foreach ($pre_defined_fields_res as $row) {
-                $templateField = TemplateField::updateOrCreate(['id' => 0],
-                    ['template_id' => $post->id,
-                        'label_ar' => $row->label_ar,
-                        'label_en' => $row->label_en,
-                        'mandatory' => $row->mandatory,
-                        'min_char' => $row->min_char,
-                        'max_char' => $row->max_char,
-                     	'field_order' => $row->field_order,
-                        'field_type_id' => $row->field_type_id,
-                    ]);
-
-                $where = array('predefined_field_id' => $row->id);
-                $pre_defined_field_elements_res = PreDefinedFieldElement::where($where)->get()->all();
-
-
-                foreach ($pre_defined_field_elements_res as $row_filed_elements) {
-                    $templateFieldElement = TemplateFieldElement::updateOrCreate(['id' => 0],
-                        ['value_ar' => $row_filed_elements->value_ar,
-                            'value_en' => $row_filed_elements->value_en,
-                            'value_id' => $row_filed_elements->value_id,
-                            'order' => $row_filed_elements->order,
-                            'template_field_id' => $templateField->id,
-                        ]);
-                }
-            }
+        if($template_id != ''){
+            $body['id'] = $template_id;
+            $url = 'registrationForm/update';
         }
-        return Response::json($post);
-    }
 
-    /**
-     * Show the form for editing the specified resource.
-     *
-     */
-
-
-    public function edit($id)
-    {
-        $where = array('id' => $id);
-        $post = Template::where($where)->first();
-        return Response::json($post);
+        return Response::json(ParseAPIResponse:: parseResult(CallAPI::postAPI($url, $body)));
     }
 
 
-    /**
-     * Remove the specified resource from storage.
-     *
-     */
-    public function destroy($id)
+    public function getById($id)
     {
-        $post = Template::where('id', $id)->delete();
+        $url = 'registrationForm/getByID';
 
-        return Response::json($post);
+        $body = [
+            "id" => $id,
+        ];
+
+        return Response::json(ParseAPIResponse:: parseResult(CallAPI::postAPI($url, $body)));
     }
 
     public function changeStatus($id, $status)
     {
-        $post = Template::updateOrCreate(['id' => $id],
-            [
-                'status' => $status
-            ]);
-        return Response::json($post);
+        $url = 'registrationForm/enable';
+
+        $body = [
+            "id" => $id
+        ];
+
+        if($status == 0){
+            $url = 'registrationForm/disable';
+        }
+
+        return Response::json(ParseAPIResponse:: parseResult(CallAPI::postAPI($url, $body)));
     }
 
     public function changeLock($id, $is_locked)
     {
-        $post = Template::updateOrCreate(['id' => $id],
-            [
-                'is_locked' => $is_locked - 2
-            ]);
-        return Response::json($post);
+
+        $url = 'registrationForm/lock';
+
+        $body = [
+            "id" => $id
+        ];
+
+        if($is_locked == 2){
+            $url = 'registrationForm/unlock';
+        }
+
+        return Response::json(ParseAPIResponse:: parseResult(CallAPI::postAPI($url, $body)));
     }
 
     public static function getConditionPart($columnName,$condition,$token){
