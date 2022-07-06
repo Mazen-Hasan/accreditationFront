@@ -278,10 +278,14 @@ Route::group(['middleware' => 'role:super-admin'], function () {
 
     Route::get('/templates', [App\Http\Controllers\TemplateController::class, 'index'])->name('templates');
     Route::get('/template-add', [App\Http\Controllers\TemplateController::class, 'templateAdd'])->name('templateAdd');
+    Route::get('/template-getById/{id}', [App\Http\Controllers\TemplateController::class, 'getById'])->name('templateGetById');
     Route::resource('templateController', 'App\Http\Controllers\TemplateController');
-    Route::get('templateController/destroy/{id}', 'App\Http\Controllers\TemplateController@destroy');
-    Route::get('templateController/changeStatus/{id}/{status}', 'App\Http\Controllers\TemplateController@changeStatus')->name('templateControllerChangeStatus');
-    Route::get('templateController/changeLock/{id}/{status}', 'App\Http\Controllers\TemplateController@changeLock')->name('templateControllerChangeLock');
+
+//    Route::get('templateController/changeStatus/{id}/{status}', 'App\Http\Controllers\TemplateController@changeStatus')->name('templateControllerChangeStatus');
+    Route::get('templateController/changeStatus/{id}/{status}', [App\Http\Controllers\TemplateController::class, 'changeStatus'])->name('templateControllerChangeStatus');
+
+//    Route::get('templateController/changeLock/{id}/{status}', 'App\Http\Controllers\TemplateController@changeLock')->name('templateControllerChangeLock');
+    Route::get('templateController/changeLock/{id}/{status}', [App\Http\Controllers\TemplateController::class, 'changeLock'])->name('templateControllerChangeLock');
 
 	Route::resource('emailTemplateController', 'App\Http\Controllers\EmailTemplateController');
     Route::get('email-templates', [App\Http\Controllers\EmailTemplateController::class, 'index'])->name('emailTemplates');

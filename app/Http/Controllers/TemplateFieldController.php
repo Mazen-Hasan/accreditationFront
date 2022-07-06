@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Http\Traits\CallAPI;
+use App\Http\Traits\ParseAPIResponse;
 use App\Models\FieldType;
 use App\Models\Template;
 use App\Models\TemplateField;
@@ -12,24 +13,24 @@ use Illuminate\Support\Facades\Response;
 
 class TemplateFieldController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     *
-     * @return \Illuminate\Http\Response
-     */
+
     public function index($template_id)
     {
         if (request()->ajax()) {
 //            $templateFields = DB::select('select * from template_fields_view v where v.template_id = ?', [$template_id]);
 
+
             $body = [
                 'registration_form_id' =>  $template_id
             ];
-            $result = CallAPI::postAPI('registrationFormField/getAll',$body);
-            $errCode = $result['errCode'];
-            $errMsg = $result['errMsg'];
-            $data = $result['data'];
-            $data = json_decode(json_encode($data['data']));
+
+            $url = 'registrationFormField/getAll';
+
+            $result = ParseAPIResponse:: parseResult( CallAPI::postAPI($url, $body));
+
+            $template_name = $result['data']['registration_form_name'];
+
+            $data = json_decode(json_encode($result['data']['data']));
 
             return datatables()->of($data)
                 ->addColumn('action', function ($data) {
@@ -50,29 +51,50 @@ class TemplateFieldController extends Controller
                 ->make(true);
         }
 
-        $fieldTypes = FieldType::get()->all();
+        $url = 'registrationFormField/fieldTypeGetAll';
+        $body = [
+        ];
+        $result = ParseAPIResponse:: parseResult(CallAPI::postAPI($url, $body));
+        $fieldTypes = $result['data']['data'];
 
-        $where = array('id' => $template_id);
-        $template = Template::where($where)->first();
 
-        return view('pages.Template.template-fields')->with('template', $template)->with('fieldTypes', $fieldTypes);
+        $url = 'registrationForm/getByID';
+        $body = [
+            "id" => $template_id,
+        ];
+        $result = ParseAPIResponse:: parseResult(CallAPI::postAPI($url, $body));
+        $template = [
+            "id" => $template_id,
+            "name" => $result['data']['name'],
+            "is_locked" => $result['data']['is_locked']
+            ];
+
+        return view('pages.Template.template-fields')->with('template',  json_decode(json_encode($template)))->with('fieldTypes', $fieldTypes);
     }
 
     public function store(Request $request)
     {
-        $fieldId = $request->field_id;
 
-        $templateField = TemplateField::updateOrCreate(['id' => $fieldId],
-            ['template_id' => $request->template_id,
-                'label_ar' => $request->label_ar,
-                'label_en' => $request->label_en,
-                'mandatory' => $request->has('mandatory'),
-                'min_char' => $request->min_char,
-                'max_char' => $request->max_char,
-                'field_type_id' => $request->field_type,
-                'field_order' => $request->field_order
-            ]);
-        return Response::json($templateField);
+        $field_id = $request->field_id;
+        $url = 'registrationFormField/create';
+
+        $body = [
+            "registration_form_id" => $request->template_id,
+            "label_ar" => $request->label_ar,
+            "label_en" => $request->label_en,
+            "field_type_id" => $request->field_type,
+            "min_char" => $request->min_char,
+            "max_char" => $request->max_char,
+            "order" => $request->field_order,
+            "is_mandatory" => $request->has('mandatory'),
+        ];
+
+        if($field_id != ''){
+            $body['id'] = $field_id;
+            $url = 'registrationFormField/update';
+        }
+
+        return Response::json(ParseAPIResponse:: parseResult(CallAPI::postAPI($url, $body)));
     }
 
     public function edit($fieldId)

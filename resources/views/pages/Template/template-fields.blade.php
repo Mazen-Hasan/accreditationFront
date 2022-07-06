@@ -25,7 +25,7 @@
                                     <a class="url-nav" href="{{route('templates')}}">
                                         <span>Template:</span>
                                     </a>
-                                    {{$template_name}} / Fields
+                                    {{$template->name}} / Fields
                                 </p>
                             </div>
                         	<div class="col-md-1 align-content-md-center">
@@ -116,11 +116,11 @@
                                     <div class="col-sm-12">
                                         <select id="field_type" name="field_type" required="">
                                             @foreach ($fieldTypes as $fieldType)
-                                                <option value="{{ $fieldType->id }}" data-slug="{{$fieldType->slug}}"
-                                                        @if ($fieldType->key == 1)
-                                                        selected="selected"
-                                                    @endif
-                                                >{{ $fieldType->name }}</option>
+                                                <option value="{{ $fieldType['id'] }}" data-slug="{{$fieldType['slug']}}"
+{{--                                                        @if ($fieldType['key'] == 1)--}}
+{{--                                                        selected="selected"--}}
+{{--                                                    @endif--}}
+                                                >{{ $fieldType['name'] }}</option>
                                             @endforeach
                                         </select>
                                     </div>
@@ -274,7 +274,7 @@
                     },
                     {data: 'min_char', name: 'min_char'},
                     {data: 'max_char', name: 'max_char'},
-                    {data: 'name', name: 'name'},
+                    {data: 'type', name: 'type'},
                     {data: 'action', name: 'action', orderable: false}
                 ],
                 order: [[3, 'asc']]
