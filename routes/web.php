@@ -296,6 +296,8 @@ Route::group(['middleware' => 'role:super-admin'], function () {
     Route::get('/users-add', [App\Http\Controllers\UserController::class, 'userAdd'])->name('userAdd');
     Route::get('/users-edit/{id}', [App\Http\Controllers\UserController::class, 'userEdit'])->name('userEdit');
     Route::get('userController/reset_password/{id}/{password}', 'App\Http\Controllers\UserController@resetPassword')->name('userControllerResetPassword');
+    Route::get('/user-permissions/{usereId}', [App\Http\Controllers\UserController::class, 'getUserPermissions'])->name('getUserPermissions');
+    Route::post('/user-permissions/update', [App\Http\Controllers\UserController::class, 'updateUserPermissions'])->name('updateUserPermissions');
 
     Route::get('/template-fields/{template_id}', [App\Http\Controllers\TemplateFieldController::class, 'index'])->name('templateFields');
     Route::resource('templateFieldController', 'App\Http\Controllers\TemplateFieldController');

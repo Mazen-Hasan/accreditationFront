@@ -25,7 +25,7 @@
                             {{$role_name}} / Permissions
                         </h4>
                         <form class="form-horizontal" id="postForm" name="postForm">
-                            <input type="hidden" name="role" id="h_role_id" value="{{$role_id}}">
+                            <input type="hidden" name="role" id="h_user_id" value="{{$user_id}}">
                             <input type="hidden" name="permissions" id="permissions" value="{{$permissions}}">
                             <div class="card" style="border-radius: 20px; margin-top:20px" id="event-type-container">
                                 <div class="card-body">
@@ -408,11 +408,11 @@
             permission_ids = permission_ids.substring(0, permission_ids.length-1);
 
             var formData = new FormData();
-            formData.append('role_id', $('#h_role_id').val());
+            formData.append('user_id', $('#h_user_id').val());
             formData.append('permission_ids', permission_ids);
 
             $.ajax({
-                url: "{{ route('updateRolePermissions') }}",
+                url: "{{ route('updateUserPermissions') }}",
                 type: 'POST',
                 data: formData,
                 cache: false,
