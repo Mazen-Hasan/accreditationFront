@@ -8,6 +8,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Response;
+use App\Http\Traits\CallAPI;
 
 class UserController extends Controller
 {
@@ -114,4 +115,39 @@ class UserController extends Controller
             ]);
         return Response::json($user);
     }
+
+    public function updateUserPermissions(Request $request)
+    {
+        $user_id = $request->user_id;
+        $permissions = $request->permission_ids;
+
+        $body = [
+            "user_id" => $user_id,
+            "permission_ids" => $permissions
+        ];
+
+        $result = CallAPI::postAPI('user/permissions/update', $body);
+
+//        $errCode = $result['errCode'];
+//        $errMsg = $result['errMsg'];
+
+        return Response::json($result);
+    }
+
+    public function getUserPermissions($user_id)
+    {
+        $body = [
+            'user_id' => $user_id
+        ];
+        $result = CallAPI::postAPI('user/permissions/getAll',$body);
+        $errCode = $result['errCode'];
+        $errMsg = $result['errMsg'];
+        $data = $result['data'];
+        $role_name = $data['role_name'];
+        $user_name = $data['user_name'];
+        $data = json_encode($data['data']);
+
+        return view('pages.Users.user-permissions')->with('user_id',$user_id)->with('role_name',$role_name)->with('permissions', $data)->with('user_name',$user_name);
+    }
+
 }
