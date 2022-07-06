@@ -30,6 +30,8 @@ class UserController extends Controller
                     	$button .= '&nbsp;&nbsp;';
                     }
                     $button .= '<a href="javascript:void(0);" id="reset_password" data-toggle="tooltip" data-original-title="Delete" data-id="' . $data->user_id . '"  title="Reset password"><i class="fas fa-retweet"></i></a>';
+                    $button .= '&nbsp;&nbsp;';
+                    $button .= '<a  href="' . route('getUserPermissions', $data->user_id) . '" id="user-permissions" data-toggle="tooltip"  data-id="' . $data->user_id . '" data-original-title="Permissions" title="Permissions"><i class="far fa-list-alt""></i></a>';
                     return $button;
                 })
                 ->rawColumns(['action'])
@@ -143,9 +145,12 @@ class UserController extends Controller
         $errCode = $result['errCode'];
         $errMsg = $result['errMsg'];
         $data = $result['data'];
-        $role_name = $data['role_name'];
-        $user_name = $data['user_name'];
-        $data = json_encode($data['data']);
+        //$role_name = $data['role_name'];
+        $role_name = "SuperAdmin";
+        //$user_name = $data['user_name'];
+        $user_name = "super admin";
+        // $data = json_encode($data['data']);
+        $data ='[{"id":"1", "slug":"event-add", "pre":0},{"id":"2", "slug":"event-edit", "pre":1},{"id":"3", "slug":"event-view", "pre":1},{"id":"4", "slug":"event-complete", "pre":1},{"id":"5", "slug":"event-admin-list", "pre":0}]';
 
         return view('pages.Users.user-permissions')->with('user_id',$user_id)->with('role_name',$role_name)->with('permissions', $data)->with('user_name',$user_name);
     }
