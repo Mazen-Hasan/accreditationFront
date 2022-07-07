@@ -19,7 +19,7 @@
                 <div class="card" style="border-radius: 20px">
                     <div class="card-body">
                         <h4 class="card-title">
-                            <a class="url-nav" href="{{route('roles')}}">
+                            <a class="url-nav" href="{{route('users')}}">
                                 <span>Users:</span>
                             </a>
                             {{$role_name}} / Permissions

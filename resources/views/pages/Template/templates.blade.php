@@ -131,7 +131,7 @@
             </div>
         </div>
     </div>
-
+    <!-- loader modal -->
     <div class="modal" id="loader-modal" tabindex="-1" data-backdrop="static" data-keyboard="false"
          role="dialog" aria-hidden="true">
         <div class="modal-dialog" role="document" style="width: 250px">
@@ -151,7 +151,7 @@
             </div>
         </div>
     </div>
-
+    <!-- error modal -->
     <div class="modal fade" id="error-pop-up-modal" tabindex="-1" data-bs-backdrop="static"
          data-bs-keyboard="false" role="dialog" aria-hidden="true">
         <div class="modal-dialog" role="document">
@@ -243,7 +243,6 @@
                 url = url.replace(':id', template_id);
 
                 $.get( url, function (data) {
-                    $('#loader-modal').modal('hide');
                 })
                     .done(function (data) {
                         $('#loader-modal').modal('hide');
@@ -265,8 +264,8 @@
                     .fail(function (data) {
                         $('#template-modal').modal('hide');
                         $('#loader-modal').modal('hide');
-                        $('#btn-save').html('Save Changes');
                     });
+                $('#btn-save').html('Save');
             });
 
             $('body').on('click', '#activate-template', function () {
@@ -390,26 +389,22 @@
                         type: "POST",
                         dataType: 'json',
                         success: function (data) {
-                            $('#template-modal').modal('hide');
+                            $('#loader-modal').modal('hide');
+                            $('#templateForm').trigger("reset");
                             if(data['errCode']==1){
-                                $('#loader-modal').modal('hide');
-                                $('#templateForm').trigger("reset");
                                 $('#template-modal').modal('hide');
                                 var oTable = $('#laravel_datatable').dataTable();
                                 oTable.fnDraw(false);
                             }
                             else{
-                                $('#loader-modal').modal('hide');
-                                $('#templateForm').trigger("reset");
-                                $('#errorTitle').html('Error');
                                 $('#errorText').html(data['errMsg']);
                                 $('#error-pop-up-modal').modal('show');
                             }
                         },
                         error: function (data) {
-                            $('#template-modal').modal('hide');
                             $('#loader-modal').modal('hide');
-                            $('#btn-save').html('Save Changes');
+                            $('#errorText').html(data['errMsg']);
+                            $('#error-pop-up-modal').modal('show');
                         }
                     });
                     $('#btn-save').html('Save');

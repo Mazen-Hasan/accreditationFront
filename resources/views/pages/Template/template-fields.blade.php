@@ -117,9 +117,6 @@
                                         <select id="field_type" name="field_type" required="">
                                             @foreach ($fieldTypes as $fieldType)
                                                 <option value="{{ $fieldType['id'] }}" data-slug="{{$fieldType['slug']}}"
-{{--                                                        @if ($fieldType['key'] == 1)--}}
-{{--                                                        selected="selected"--}}
-{{--                                                    @endif--}}
                                                 >{{ $fieldType['name'] }}</option>
                                             @endforeach
                                         </select>
@@ -210,6 +207,7 @@
             </div>
         </div>
     </div>
+    <!-- loader modal -->
     <div class="modal" id="loader-modal" tabindex="-1" data-backdrop="static" data-keyboard="false"
          role="dialog" aria-hidden="true">
         <div class="modal-dialog" role="document" style="width: 250px">
@@ -223,6 +221,29 @@
                             <label class="loading">
                                 loading...
                             </label>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- error modal -->
+    <div class="modal fade" id="error-pop-up-modal" tabindex="-1" data-bs-backdrop="static"
+         data-bs-keyboard="false" role="dialog" aria-hidden="true">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="errorTitle">Error</h5>
+                </div>
+                <div class="modal-body">
+                    <div>
+                        <label class="col-sm-12 confirm-text" id="errorText"></label>
+                    </div>
+                    <div class="modal-footer">
+                        <div class="col-sm-12">
+                            <button type="submit" class="btn-cancel" data-dismiss="modal" value="create">OK
+                            </button>
                         </div>
                     </div>
                 </div>
@@ -291,12 +312,10 @@
             });
 
             $('#add-new-field').click(function () {
-                $('#btn-save').val("create-field");
                 $('#field_id').val('');
                 $('#fieldForm').trigger("reset");
                 $('#modalTitle').html("New Field");
                 $('#field-modal').modal('show');
-                // $('#field_type').removeAttr('disabled');
                 var selected = $('#field_type').find('option:selected');
                 var slug = selected.data('slug');
                 if (slug === 'text' || slug === 'number' || slug === 'textarea') {
@@ -313,37 +332,54 @@
             $('body').on('click', '#edit-field', function () {
                 var field_id = $(this).data('id');
                 $('#loader-modal').modal('show');
-                $.get('../templateFieldController/' + field_id + '/edit', function (data) {
-                    $('#loader-modal').modal('hide');
-                    $('#name-error').hide();
-                    $('#modalTitle').html("Edit Field");
-                    $('#btn-save').val("edit-field");
-                    $('#field-modal').modal('show');
-                    $('#field_id').val(data.id);
-                    $('#label_ar').val(data.label_ar);
-                    $('#label_en').val(data.label_en);
-                    $('#min_char').val(data.min_char);
-                    $('#max_char').val(data.max_char);
-                    $('#field_order').val(data.field_order);
-                    if (data.mandatory === 1) {
-                        $('#mandatory').attr('checked', 'checked');
-                    } else {
-                        $('#mandatory').removeAttr('checked');
-                    }
 
-                    $('#field_type').val(data.field_type_id);
+                var url = "{{ route('templateFieldGetById', ":id") }}";
+                url = url.replace(':id', field_id);
 
-                    var selected = $('#field_type').find('option:selected');
-                    var slug = selected.data('slug');
-                    if (slug === 'text' || slug === 'number' || slug === 'textarea') {
-                        $('#option').show();
-                        $('#min_char').prop('disabled', false);
-                        $('#max_char').prop('disabled', false);
-                    } else {
-                        $('#option').hide();
-                        $('#min_char').prop('disabled', true);
-                        $('#max_char').prop('disabled', true);
-                    }
+                $.get( url, function (data) {
+                })
+                    .done(function (data) {
+                        $('#loader-modal').modal('hide');
+                        $('#templateForm').trigger("reset");
+                        if (data['errCode'] == '1') {
+                            $('#modalTitle').html("Edit Field");
+                            $('#field-modal').modal('show');
+                            $('#field_id').val(data['data']['id']);
+                            $('#label_ar').val(data['data']['label_ar']);
+                            $('#label_en').val(data['data']['label_en']);
+                            $('#min_char').val(data['data']['min_char']);
+                            $('#max_char').val(data['data']['max_char']);
+                            $('#field_order').val(data['data']['field_order']);
+                            if (data['mandatory'] === 1) {
+                                $('#mandatory').attr('checked', 'checked');
+                            } else {
+                                $('#mandatory').removeAttr('checked');
+                            }
+
+                            $('#field_type').val(data['data']['field_type_id']);
+
+                            var selected = $('#field_type').find('option:selected');
+                            var slug = selected.data('slug');
+                            if (slug === 'text' || slug === 'number' || slug === 'textarea') {
+                                $('#option').show();
+                                $('#min_char').prop('disabled', false);
+                                $('#max_char').prop('disabled', false);
+                            } else {
+                                $('#option').hide();
+                                $('#min_char').prop('disabled', true);
+                                $('#max_char').prop('disabled', true);
+                            }
+                        } else {
+                            $('#errorText').html(data['errMsg']);
+                            $('#error-pop-up-modal').modal('show');
+                        }
+                    })
+                    .fail(function (data) {
+                        $('#template-modal').modal('hide');
+                        $('#loader-modal').modal('hide');
+                        $('#btn-save').html('Save Changes');
+                    });
+                $('#btn-save').html('Save');
                 });
             });
 
@@ -362,24 +398,37 @@
 
                 $(this).closest('.modal').one('hidden.bs.modal', function () {
                     if ($button[0].id === 'btn-yes') {
+                        $('#btn-save').html('Sending..');
                         $('#loader-modal').modal('show');
                         var field_id = $('#curr_field_id').val();
+
+                        var url = "{{ route('templateFieldDelete', ":id") }}";
+                        url = url.replace(':id', field_id);
+
                         $.ajax({
                             type: "get",
-                            url: "../templateFieldController/destroy/" + field_id,
+                            url: url,
                             success: function (data) {
                                 $('#loader-modal').modal('hide');
-                                var oTable = $('#laravel_datatable').dataTable();
-                                oTable.fnDraw(false);
+                                $('#btn-save').html('Save Changes');
+                                if (data['errCode'] == '1') {
+                                    $('#loader-modal').modal('hide');
+                                    var oTable = $('#laravel_datatable').dataTable();
+                                    oTable.fnDraw(false);
+                                } else {
+                                    $('#errorText').html(data['errMsg']);
+                                    $('#error-pop-up-modal').modal('show');
+                                }
                             },
                             error: function (data) {
                                 $('#loader-modal').modal('hide');
-                                console.log('Error:', data);
+                                $('#errorText').html(data['errMsg']);
+                                $('#error-pop-up-modal').modal('show');
                             }
                         });
+                        $('#btn-save').html('Save');
                     }
                 });
-            });
         });
 
         if ($("#fieldForm").length > 0) {
@@ -394,18 +443,24 @@
                         dataType: 'json',
                         success: function (data) {
                             $('#loader-modal').modal('hide');
-                            $('#fieldForm').trigger("reset");
-                            $('#field-modal').modal('hide');
-                            $('#btn-save').html('Save Changes');
-                            var oTable = $('#laravel_datatable').dataTable();
-                            oTable.fnDraw(false);
+                            $('#templateForm').trigger("reset");
+                            if(data['errCode']==1){
+                                $('#field-modal').modal('hide');
+                                var oTable = $('#laravel_datatable').dataTable();
+                                oTable.fnDraw(false);
+                            }
+                            else{
+                                $('#errorText').html(data['errMsg']);
+                                $('#error-pop-up-modal').modal('show');
+                            }
                         },
                         error: function (data) {
                             $('#loader-modal').modal('hide');
-                            console.log('Error:', data);
-                            $('#btn-save').html('Save Changes');
+                            $('#errorText').html(data['errMsg']);
+                            $('#error-pop-up-modal').modal('show');
                         }
                     });
+                    $('#btn-save').html('Save');
                 }
             })
         }

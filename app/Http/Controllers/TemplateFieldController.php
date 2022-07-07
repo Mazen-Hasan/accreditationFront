@@ -97,17 +97,26 @@ class TemplateFieldController extends Controller
         return Response::json(ParseAPIResponse:: parseResult(CallAPI::postAPI($url, $body)));
     }
 
-    public function edit($fieldId)
+    public function getById($id)
     {
-        $where = array('id' => $fieldId);
-        $templateField = TemplateField::where($where)->first();
-        return Response::json($templateField);
+        $url = 'registrationFormField/getByID';
+
+        $body = [
+            "registration_form_field_id" => $id,
+        ];
+
+        return Response::json(ParseAPIResponse:: parseResult(CallAPI::postAPI($url, $body)));
     }
 
-    public function destroy($field_id)
+    public function delete($id)
     {
-        $field = TemplateField::where('id', $field_id)->delete();
 
-        return Response::json($field);
+        $url = 'registrationFormField/delete';
+
+        $body = [
+            "registration_form_field_id" => $id,
+        ];
+
+        return Response::json(ParseAPIResponse:: parseResult(CallAPI::postAPI($url, $body)));
     }
 }
