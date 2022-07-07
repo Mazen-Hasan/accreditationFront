@@ -83,14 +83,14 @@ class TemplateFieldController extends Controller
             "label_ar" => $request->label_ar,
             "label_en" => $request->label_en,
             "field_type_id" => $request->field_type,
-            "min_char" => $request->min_char,
-            "max_char" => $request->max_char,
-            "order" => $request->field_order,
-            "is_mandatory" => $request->has('mandatory'),
+            "min_char" => isset( $request->min_char ) ? $request->min_char : "0",
+            "max_char" => isset( $request->max_char ) ? $request->max_char : "0",
+            "order" => isset( $request->order ) ? $request->min_char : "0",
+            "is_mandatory" => ($request->has('mandatory') ? "1" : "0"),
         ];
 
         if($field_id != ''){
-            $body['id'] = $field_id;
+            $body['registration_form_field_id'] = $field_id;
             $url = 'registrationFormField/update';
         }
 

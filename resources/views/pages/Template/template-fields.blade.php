@@ -87,7 +87,7 @@
                     <form id="fieldForm" name="fieldForm" class="form-horizontal">
                         <input style="visibility: hidden" type="text" name="template_id" id="template_id"
                                value="{{$template->id}}">
-                        <input type="hidden" name="field_id" id="field_id">
+                            <input type="hidden" name="field_id" id="field_id">
                         <div class="row">
                             <div class="col-md-6">
                                 <div class="form-group col">
