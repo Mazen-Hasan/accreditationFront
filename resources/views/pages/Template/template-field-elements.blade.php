@@ -119,13 +119,6 @@
                                 </div>
                             </div>
                             <div class="col-md-6">
-                                <!--                                 <div class="form-group col">
-                                                                    <label>Value (ID)</label>
-                                                                    <div class="col-sm-12">
-                                                                        <input type="number" id="value_id" min="1" max="20" name="value_id"
-                                                                               placeholder="enter value ID" required="">
-                                                                    </div>
-                                                                </div> -->
                             </div>
                         </div>
 

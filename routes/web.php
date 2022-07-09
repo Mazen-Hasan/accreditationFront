@@ -286,26 +286,23 @@ Route::group(['middleware' => 'role:super-admin'], function () {
 	Route::resource('emailTemplateController', 'App\Http\Controllers\EmailTemplateController');
     Route::get('email-templates', [App\Http\Controllers\EmailTemplateController::class, 'index'])->name('emailTemplates');
 
-
     Route::resource('userController', 'App\Http\Controllers\UserController');
     Route::get('/users', [App\Http\Controllers\UserController::class, 'index'])->name('users');
     Route::get('/users-add', [App\Http\Controllers\UserController::class, 'userAdd'])->name('userAdd');
     Route::get('/users-edit/{id}', [App\Http\Controllers\UserController::class, 'userEdit'])->name('userEdit');
     Route::get('userController/reset_password/{id}/{password}', 'App\Http\Controllers\UserController@resetPassword')->name('userControllerResetPassword');
-    Route::get('/user-permissions/{usereId}', [App\Http\Controllers\UserController::class, 'getUserPermissions'])->name('getUserPermissions');
+    Route::get('/user-permissions/{userId}', [App\Http\Controllers\UserController::class, 'getUserPermissions'])->name('getUserPermissions');
     Route::post('/user-permissions/update', [App\Http\Controllers\UserController::class, 'updateUserPermissions'])->name('updateUserPermissions');
 
     Route::get('/template-fields/{template_id}', [App\Http\Controllers\TemplateFieldController::class, 'index'])->name('templateFields');
     Route::resource('templateFieldController', 'App\Http\Controllers\TemplateFieldController');
     Route::get('/template-field-getById/{id}', [App\Http\Controllers\TemplateFieldController::class, 'getById'])->name('templateFieldGetById');
     Route::get('/template-field-delete/{id}', [App\Http\Controllers\TemplateFieldController::class, 'delete'])->name('templateFieldDelete');
-//    Route::get('templateFieldController/destroy/{field_id}', 'App\Http\Controllers\TemplateFieldController@destroy');
 
     Route::get('/template-field-elements/{field_id}', [App\Http\Controllers\TemplateFieldElementController::class, 'index'])->name('templateFieldElements');
     Route::resource('templateFieldElementController', 'App\Http\Controllers\TemplateFieldElementController');
     Route::get('/template-field-element-getById/{id}', [App\Http\Controllers\TemplateFieldElementController::class, 'getById'])->name('templateFieldElementGetById');
     Route::get('/template-field-element-delete/{id}', [App\Http\Controllers\TemplateFieldElementController::class, 'delete'])->name('templateFieldElementDelete');
-//    Route::get('templateFieldElementController/destroy/{element_id}', [App\Http\Controllers\TemplateFieldElementController::class, 'destroy'])->name('templateFieldElementDelete');
 
     Route::get('/template-badge', [App\Http\Controllers\TemplateBadgeController::class, 'index'])->name('templateBadge');
     Route::resource('templateBadgeController', 'App\Http\Controllers\TemplateBadgeController');
