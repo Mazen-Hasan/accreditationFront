@@ -4,11 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Http\Traits\CallAPI;
 use App\Http\Traits\ParseAPIResponse;
-use App\Models\FieldType;
-use App\Models\Template;
-use App\Models\TemplateField;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Response;
 
 class TemplateFieldController extends Controller

@@ -4,8 +4,6 @@ namespace App\Http\Controllers;
 
 use App\Http\Traits\CallAPI;
 use App\Http\Traits\ParseAPIResponse;
-use App\Models\FieldType;
-use App\Models\SelectOption;
 use App\Models\Template;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -122,7 +120,6 @@ class TemplateController extends Controller
 
         return Response::json(ParseAPIResponse:: parseResult(CallAPI::postAPI($url, $body)));
     }
-
 
     public function getById($id)
     {
