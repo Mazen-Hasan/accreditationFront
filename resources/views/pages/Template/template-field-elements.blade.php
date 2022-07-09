@@ -28,10 +28,10 @@
                                     <a class="url-nav" href="{{route('templateFields',$template->template_id)}}">
                                         <span>{{$template->template_name}}</span>
                                     </a>
-                                    / {{$template->label_en}} / Elements
+                                    / {{$template->field_name}} / Elements
                                 </p>
                             </div>
-                        <div class="col-md-1 align-content-md-center">
+                            <div class="col-md-1 align-content-md-center">
                                 <div class="search-container">
                                     <input class="search expandright" id="search" type="text" placeholder="Search">
                                     <label class="search-button search-button-icon" for="search">
@@ -75,6 +75,7 @@
             </div>
         </div>
     </div>
+
     <div class="modal fade" id="element-modal" aria-hidden="true">
         <div class="modal-dialog">
             <div class="modal-content">
@@ -82,10 +83,10 @@
                     <h4 class="modal-title" id="modalTitle"></h4>
                 </div>
                 <div class="modal-body">
-                    <form id="fieldForm" name="fieldForm" class="form-horizontal">
+                    <form id="elementForm" name="elementForm" class="form-horizontal">
                         <input style="visibility: hidden" type="text" name="field_id" id="field_id"
-                               value="{{$template->id}}">
-
+                               value="{{$template->field_id}}">
+                        <input type="hidden" name="element_id" id="element_id">
                         <div class="row">
                             <div class="col-md-6">
                                 <div class="form-group col">
@@ -118,13 +119,13 @@
                                 </div>
                             </div>
                             <div class="col-md-6">
-<!--                                 <div class="form-group col">
-                                    <label>Value (ID)</label>
-                                    <div class="col-sm-12">
-                                        <input type="number" id="value_id" min="1" max="20" name="value_id"
-                                               placeholder="enter value ID" required="">
-                                    </div>
-                                </div> -->
+                                <!--                                 <div class="form-group col">
+                                                                    <label>Value (ID)</label>
+                                                                    <div class="col-sm-12">
+                                                                        <input type="number" id="value_id" min="1" max="20" name="value_id"
+                                                                               placeholder="enter value ID" required="">
+                                                                    </div>
+                                                                </div> -->
                             </div>
                         </div>
 
@@ -140,7 +141,7 @@
         </div>
     </div>
 
-    <!-- Modal -->
+    <!-- Delete confirm modal -->
     <div class="modal fade" id="delete-element-confirm-modal" tabindex="-1" data-bs-backdrop="static"
          data-bs-keyboard="false" role="dialog" aria-hidden="true">
         <div class="modal-dialog" role="document">
@@ -168,6 +169,8 @@
             </div>
         </div>
     </div>
+
+    <!-- loader modal -->
     <div class="modal" id="loader-modal" tabindex="-1" data-backdrop="static" data-keyboard="false"
          role="dialog" aria-hidden="true">
         <div class="modal-dialog" role="document" style="width: 250px">
@@ -187,6 +190,29 @@
             </div>
         </div>
     </div>
+
+    <!-- error modal -->
+    <div class="modal fade" id="error-pop-up-modal" tabindex="-1" data-bs-backdrop="static"
+         data-bs-keyboard="false" role="dialog" aria-hidden="true">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="errorTitle">Error</h5>
+                </div>
+                <div class="modal-body">
+                    <div>
+                        <label class="col-sm-12 confirm-text" id="errorText"></label>
+                    </div>
+                    <div class="modal-footer">
+                        <div class="col-sm-12">
+                            <button type="submit" class="btn-cancel" data-dismiss="modal" value="create">OK
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
 @endsection
 @section('script')
     <script>
@@ -199,7 +225,7 @@
 
             var fieldId = $('#field_id').val();
 
-            var url = "{{ route('fieldElements', ":id") }}";
+            var url = "{{ route('templateFieldElements', ":id") }}";
             url = url.replace(':id', fieldId);
 
             $('#laravel_datatable').DataTable({
@@ -220,21 +246,20 @@
                     type: 'GET',
                 },
                 columns: [
-                    {data: 'id', name: 'id', 'visible': false},
+                    {data: 'element_id', name: 'element_id', 'visible': false},
                     {data: 'value_ar', name: 'value_ar'},
                     {data: 'value_en', name: 'value_en'},
-                    // {data: 'value_id', name: 'value_id'},
                     {data: 'order', name: 'order'},
                     {data: 'action', name: 'action', orderable: false}
                 ],
-                order: [[0, 'desc']]
+                order: [[3, 'asc']]
             });
 
             $('.export-to-excel').click(function () {
                 $('#laravel_datatable').DataTable().button('.buttons-excel').trigger();
             });
 
-        	var oTable = $('#laravel_datatable').DataTable();
+            var oTable = $('#laravel_datatable').DataTable();
 
             $('#search').on('keyup', function () {
                 oTable.search(this.value).draw();
@@ -242,87 +267,127 @@
 
             $('#add-new-element').click(function () {
                 $('#btn-save').val("create-element");
-                $('#template_id').val('');
-                $('#fieldForm').trigger("reset");
+
+                $('#element_id').val('');
+                $('#elementForm').trigger("reset");
                 $('#modalTitle').html("New Element");
                 $('#element-modal').modal('show');
             });
 
             $('body').on('click', '#edit-element', function () {
+
                 var field_id = $(this).data('id');
-                $.get('../fieldElementController/' + field_id + '/edit', function (data) {
-                    $('#name-error').hide();
-                    $('#modalTitle').html("Edit element");
-                    $('#btn-save').val("edit-element");
-                    $('#element-modal').modal('show');
-                    $('#element_id').val(data.id);
-                    $('#value_ar').val(data.value_ar);
-                    $('#value_en').val(data.value_en);
-                    $('#order').val(data.order);
-                    $('#value_id').val(data.value_id);
+                $('#loader-modal').modal('show');
+
+                var url = "{{ route('templateFieldElementGetById', ":id") }}";
+                url = url.replace(':id', field_id);
+
+                $.get(url, function (data) {
                 })
-            });
-
-
-            $('body').on('click', '#delete-element', function () {
-                var element_id = $(this).data("id");
-                $('#confirmTitle').html('Delete element');
-                $('#curr_element_id').val(element_id);
-                var confirmText = 'Are you sure you want to delete this element?';
-                $('#confirmText').html(confirmText);
-                $('#delete-element-confirm-modal').modal('show');
-            });
-
-            $('#delete-element-confirm-modal button').on('click', function (event) {
-                var $button = $(event.target);
-
-                $(this).closest('.modal').one('hidden.bs.modal', function () {
-                    if ($button[0].id === 'btn-yes') {
-                        $('#loader-modal').modal('show');
-                        var element_id = $('#curr_element_id').val();
-                        $.ajax({
-                            type: "get",
-                            url: "../fieldElementController/destroy/" + element_id,
-                            success: function (data) {
-                                $('#loader-modal').modal('hide');
-                                var oTable = $('#laravel_datatable').dataTable();
-                                oTable.fnDraw(false);
-                            },
-                            error: function (data) {
-                                $('#loader-modal').modal('hide');
-                                console.log('Error:', data);
-                            }
-                        });
-                    }
-                });
+                    .done(function (data) {
+                        $('#loader-modal').modal('hide');
+                        $('#elementForm').trigger("reset");
+                        if (data['errCode'] == '1') {
+                            $('#modalTitle').html("Edit element");
+                            $('#element-modal').modal('show');
+                            $('#element_id').val(data['data']['element_id']);
+                            $('#value_ar').val(data['data']['value_ar']);
+                            $('#value_en').val(data['data']['value_en']);
+                            $('#order').val(data['data']['order']);
+                        } else {
+                            $('#errorText').html(data['errMsg']);
+                            $('#error-pop-up-modal').modal('show');
+                        }
+                    })
+                    .fail(function (data) {
+                        $('#element-modal').modal('hide');
+                        $('#loader-modal').modal('hide');
+                        $('#btn-save').html('Save Changes');
+                    });
+                $('#btn-save').html('Save');
             });
         });
 
-        if ($("#fieldForm").length > 0) {
-            console.log('Sending...');
-            $("#fieldForm").validate({
+
+        $('body').on('click', '#delete-element', function () {
+            var element_id = $(this).data("id");
+            $('#confirmTitle').html('Delete element');
+            $('#curr_element_id').val(element_id);
+            var confirmText = 'Are you sure you want to delete this element?';
+            $('#confirmText').html(confirmText);
+            $('#delete-element-confirm-modal').modal('show');
+        });
+
+        $('#delete-element-confirm-modal button').on('click', function (event) {
+            var $button = $(event.target);
+
+            $(this).closest('.modal').one('hidden.bs.modal', function () {
+                if ($button[0].id === 'btn-yes') {
+
+                    $('#btn-save').html('Sending..');
+                    $('#loader-modal').modal('show');
+                    var element_id = $('#curr_element_id').val();
+
+                    var url = "{{ route('templateFieldElementDelete', ":id") }}";
+                    url = url.replace(':id', element_id);
+
+                    $.ajax({
+                        type: "get",
+                        url: url,
+                        success: function (data) {
+                            $('#loader-modal').modal('hide');
+                            if (data['errCode'] == '1') {
+                                $('#loader-modal').modal('hide');
+                                var oTable = $('#laravel_datatable').dataTable();
+                                oTable.fnDraw(false);
+                            } else {
+                                $('#errorText').html(data['errMsg']);
+                                $('#error-pop-up-modal').modal('show');
+                            }
+                        },
+                        error: function (data) {
+                            $('#loader-modal').modal('hide');
+                            $('#errorText').html(data['errMsg']);
+                            $('#error-pop-up-modal').modal('show');
+                        }
+                    });
+                    $('#btn-save').html('Save');
+                }
+            });
+        });
+
+
+        if ($("#elementForm").length > 0) {
+            $("#elementForm").validate({
                 submitHandler: function (form) {
                     $('#btn-save').html('Sending..');
                     $('#loader-modal').modal('show');
                     $.ajax({
-                        data: $('#fieldForm').serialize(),
-                        url: "{{ route('fieldElementController.store') }}",
+                        data: $('#elementForm').serialize(),
+                        url: "{{ route('templateFieldElementController.store') }}",
                         type: "POST",
                         dataType: 'json',
                         success: function (data) {
                             $('#loader-modal').modal('hide');
-                            $('#fieldForm').trigger("reset");
-                            $('#element-modal').modal('hide');
-                            $('#btn-save').html('Save Changes');
-                            var oTable = $('#laravel_datatable').dataTable();
-                            oTable.fnDraw(false);
+                            $("#element-modal").modal('hide');
+                            $('#elementForm').trigger("reset");
+                            if(data['errCode']==1){
+                                var oTable = $('#laravel_datatable').dataTable();
+                                oTable.fnDraw(false);
+                            }
+                            else{
+                                $('#errorText').html(data['errMsg']);
+                                $('#error-pop-up-modal').modal('show');
+                            }
                         },
                         error: function (data) {
                             $('#loader-modal').modal('hide');
-                            console.log('Error:', data);
-                            $('#btn-save').html('Save Changes');
+                            $("#element-modal").modal('hide');
+                            $('#errorText').html(data['errMsg']);
+                            $('#error-pop-up-modal').modal('show');
                         }
                     });
+                    $('#btn-save').html('Save');
                 }
             })
         }

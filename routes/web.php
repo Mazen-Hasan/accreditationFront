@@ -99,9 +99,9 @@ use Illuminate\Support\Facades\Route;
 //    Route::resource('templateFieldController', 'App\Http\Controllers\TemplateFieldController');
 //    Route::get('templateFieldController/destroy/{field_id}', 'App\Http\Controllers\TemplateFieldController@destroy');
 //
-//    Route::get('/field-elements/{field_id}', [App\Http\Controllers\FieldElementController::class, 'index'])->name('fieldElements');
-//    Route::resource('fieldElementController', 'App\Http\Controllers\FieldElementController');
-//    Route::get('fieldElementController/destroy/{element_id}', 'App\Http\Controllers\FieldElementController@destroy');
+//    Route::get('/field-elements/{field_id}', [App\Http\Controllers\TemplateFieldElementController::class, 'index'])->name('fieldElements');
+//    Route::resource('fieldElementController', 'App\Http\Controllers\TemplateFieldElementController');
+//    Route::get('fieldElementController/destroy/{element_id}', 'App\Http\Controllers\TemplateFieldElementController@destroy');
 //
 //    Route::get('/template-badge', [App\Http\Controllers\TemplateBadgeController::class, 'index'])->name('templateBadge');
 //    Route::resource('templateBadgeController', 'App\Http\Controllers\TemplateBadgeController');
@@ -299,11 +299,13 @@ Route::group(['middleware' => 'role:super-admin'], function () {
     Route::resource('templateFieldController', 'App\Http\Controllers\TemplateFieldController');
     Route::get('/template-field-getById/{id}', [App\Http\Controllers\TemplateFieldController::class, 'getById'])->name('templateFieldGetById');
     Route::get('/template-field-delete/{id}', [App\Http\Controllers\TemplateFieldController::class, 'delete'])->name('templateFieldDelete');
-    Route::get('templateFieldController/destroy/{field_id}', 'App\Http\Controllers\TemplateFieldController@destroy');
+//    Route::get('templateFieldController/destroy/{field_id}', 'App\Http\Controllers\TemplateFieldController@destroy');
 
-    Route::get('/field-elements/{field_id}', [App\Http\Controllers\FieldElementController::class, 'index'])->name('fieldElements');
-    Route::resource('fieldElementController', 'App\Http\Controllers\FieldElementController');
-    Route::get('fieldElementController/destroy/{element_id}', [App\Http\Controllers\TemplateFieldController::class, 'destroy'])->name('fieldElementsDelete');
+    Route::get('/template-field-elements/{field_id}', [App\Http\Controllers\TemplateFieldElementController::class, 'index'])->name('templateFieldElements');
+    Route::resource('templateFieldElementController', 'App\Http\Controllers\TemplateFieldElementController');
+    Route::get('/template-field-element-getById/{id}', [App\Http\Controllers\TemplateFieldElementController::class, 'getById'])->name('templateFieldElementGetById');
+    Route::get('/template-field-element-delete/{id}', [App\Http\Controllers\TemplateFieldElementController::class, 'delete'])->name('templateFieldElementDelete');
+//    Route::get('templateFieldElementController/destroy/{element_id}', [App\Http\Controllers\TemplateFieldElementController::class, 'destroy'])->name('templateFieldElementDelete');
 
     Route::get('/template-badge', [App\Http\Controllers\TemplateBadgeController::class, 'index'])->name('templateBadge');
     Route::resource('templateBadgeController', 'App\Http\Controllers\TemplateBadgeController');

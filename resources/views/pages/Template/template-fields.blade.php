@@ -153,7 +153,7 @@
                                         <label>Order</label>
                                         <div class="col-sm-12">
                                             <input type="number" id="field_order" name="field_order" min="1" max="500"
-                                                   name="max_char" placeholder="enter field order">
+                                                   placeholder="enter field order">
                                         </div>
                                     </div>
                                 </div>
@@ -283,7 +283,7 @@
                     type: 'GET',
                 },
                 columns: [
-                    {data: 'id', name: 'id', 'visible': false},
+                    {data: 'field_id', name: 'field_id', 'visible': false},
                     {data: 'label_ar', name: 'label_ar'},
                     {data: 'label_en', name: 'label_en'},
                     {data: 'field_order', name: 'field_order'},
@@ -344,7 +344,7 @@
                         if (data['errCode'] == '1') {
                             $('#modalTitle').html("Edit Field");
                             $('#field-modal').modal('show');
-                            $('#field_id').val(data['data']['id']);
+                            $('#field_id').val(data['data']['field_id']);
                             $('#label_ar').val(data['data']['label_ar']);
                             $('#label_en').val(data['data']['label_en']);
                             $('#min_char').val(data['data']['min_char']);
@@ -410,7 +410,6 @@
                             url: url,
                             success: function (data) {
                                 $('#loader-modal').modal('hide');
-                                $('#btn-save').html('Save Changes');
                                 if (data['errCode'] == '1') {
                                     $('#loader-modal').modal('hide');
                                     var oTable = $('#laravel_datatable').dataTable();
@@ -444,8 +443,8 @@
                         success: function (data) {
                             $('#loader-modal').modal('hide');
                             $('#templateForm').trigger("reset");
+                            $('#field-modal').modal('hide');
                             if(data['errCode']==1){
-                                $('#field-modal').modal('hide');
                                 var oTable = $('#laravel_datatable').dataTable();
                                 oTable.fnDraw(false);
                             }
@@ -456,6 +455,7 @@
                         },
                         error: function (data) {
                             $('#loader-modal').modal('hide');
+                            $('#field-modal').modal('hide');
                             $('#errorText').html(data['errMsg']);
                             $('#error-pop-up-modal').modal('show');
                         }

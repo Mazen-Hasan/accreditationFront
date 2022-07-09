@@ -391,8 +391,8 @@
                         success: function (data) {
                             $('#loader-modal').modal('hide');
                             $('#templateForm').trigger("reset");
+                            $('#template-modal').modal('hide');
                             if(data['errCode']==1){
-                                $('#template-modal').modal('hide');
                                 var oTable = $('#laravel_datatable').dataTable();
                                 oTable.fnDraw(false);
                             }
@@ -403,6 +403,7 @@
                         },
                         error: function (data) {
                             $('#loader-modal').modal('hide');
+                            $('#template-modal').modal('hide');
                             $('#errorText').html(data['errMsg']);
                             $('#error-pop-up-modal').modal('show');
                         }
