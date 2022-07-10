@@ -18,6 +18,8 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Response;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Http\Request;
+use App\Http\Traits\CallAPI;
+use App\Http\Traits\ParseAPIResponse;
 use Psy\Command\WhereamiCommand;
 
 class EventAdminController extends Controller
@@ -25,8 +27,16 @@ class EventAdminController extends Controller
 
     public function index()
     {
+        $body = [];
+        $url = 'event/eventAdminEventsGetAll';
+        $result = CallAPI::postAPI($url, $body);
+        $errCode = $result['errCode'];
+        $errMsg = $result['errMsg'];
+        $data = $result['data'];
+        $data = json_decode(json_encode($data));
+        $events = $data->data;
         //$events = DB::select('select * from event_admins_view where event_admin = ? and status = ? and event_end_date >= CURRENT_DATE()', [Auth::user()->id,1]);
-        $events = DB::select('select * from event_admins_view where event_admin = ? and status < ?', [Auth::user()->id,4]);
+        //$events = DB::select('select * from event_admins_view where event_admin = ? and status < ?', [Auth::user()->id,4]);
         return view('pages.EventAdmin.event-admin')->with('events', $events);
     }
 
@@ -66,53 +76,73 @@ class EventAdminController extends Controller
     }
 
     public function getData($id,$values){
-        $totalSize = DB::select('select * from companies_view where event_id = ? and parent_id is null', [$id]);
-        //$totalSize = Template::latest()->get();
-        $size = 10;
-        $whereCondition = "";
+        // $totalSize = DB::select('select * from companies_view where event_id = ? and parent_id is null', [$id]);
+        // //$totalSize = Template::latest()->get();
+        // $size = 10;
+        // $whereCondition = "";
+        // if($values != null){
+        //     if(str_contains($values,",")){
+        //         $comands = explode(",",$values);
+        //         $skip = $size * $comands[0];
+        //         $c_size = sizeof($comands);
+        //         $i = 1;
+        //         while($i < sizeof($comands)){
+        //             $token = $comands[$i];
+        //             $i = $i + 1;
+        //             $complexityType = $comands[$i];
+        //             if($complexityType == "C"){
+        //                 $i = $i + 1;
+        //                 $condition1 = $comands[$i];
+        //                 $i = $i + 1;
+        //                 $condition1token = $comands[$i];
+        //                 $i = $i + 1;
+        //                 $operator = $comands[$i];
+        //                 $i = $i + 1;
+        //                 $condition2 = $comands[$i];
+        //                 $i = $i + 1;
+        //                 $condition2token = $comands[$i];
+        //                 $whereCondition =  $whereCondition." and ".TemplateController::getConditionPart($token,$condition1,$condition1token) . " ".$operator ." ". TemplateController::getConditionPart($token,$condition2,$condition2token);
+        //             }else{
+        //                 $i = $i + 1;
+        //                 $condition1 = $comands[$i];
+        //                 $i = $i + 1;
+        //                 $condition1token = $comands[$i];
+        //                 $whereCondition = $whereCondition." and ".TemplateController::getConditionPart($token,$condition1,$condition1token);
+        //             }
+        //             $i = $i + 1;
+        //         }
+        //         $totalSize = DB::select('select * from companies_view where event_id = ? and parent_id is null '. $whereCondition, [$id]);
+        //         $templates = DB::select('select * from companies_view where event_id = ? and parent_id is null '. $whereCondition." LIMIT ". $size. " OFFSET ". $skip, [$id]);
+        //     }else{
+        //         $skip = $size * $values;
+        //         $templates = DB::select("select * from companies_view where event_id = ? and parent_id is null  LIMIT ". $size. " OFFSET ". $skip, [$id]);
+        //     }
+        // }
+        $offset = 0;
         if($values != null){
             if(str_contains($values,",")){
                 $comands = explode(",",$values);
-                $skip = $size * $comands[0];
-                $c_size = sizeof($comands);
-                $i = 1;
-                while($i < sizeof($comands)){
-                    $token = $comands[$i];
-                    $i = $i + 1;
-                    $complexityType = $comands[$i];
-                    if($complexityType == "C"){
-                        $i = $i + 1;
-                        $condition1 = $comands[$i];
-                        $i = $i + 1;
-                        $condition1token = $comands[$i];
-                        $i = $i + 1;
-                        $operator = $comands[$i];
-                        $i = $i + 1;
-                        $condition2 = $comands[$i];
-                        $i = $i + 1;
-                        $condition2token = $comands[$i];
-                        $whereCondition =  $whereCondition." and ".TemplateController::getConditionPart($token,$condition1,$condition1token) . " ".$operator ." ". TemplateController::getConditionPart($token,$condition2,$condition2token);
-                    }else{
-                        $i = $i + 1;
-                        $condition1 = $comands[$i];
-                        $i = $i + 1;
-                        $condition1token = $comands[$i];
-                        $whereCondition = $whereCondition." and ".TemplateController::getConditionPart($token,$condition1,$condition1token);
-                    }
-                    $i = $i + 1;
-                }
-                $totalSize = DB::select('select * from companies_view where event_id = ? and parent_id is null '. $whereCondition, [$id]);
-                $templates = DB::select('select * from companies_view where event_id = ? and parent_id is null '. $whereCondition." LIMIT ". $size. " OFFSET ". $skip, [$id]);
-            }else{
-                $skip = $size * $values;
-                $templates = DB::select("select * from companies_view where event_id = ? and parent_id is null  LIMIT ". $size. " OFFSET ". $skip, [$id]);
+                $offset = $comands[0];
             }
         }
+        $body = [
+            'eventID' => $id,
+            'offset' => $offset,
+            'size' => 10,
+            'filters' => $values
+        ];
+        $result = CallAPI::postAPI('event/company/getAll',$body);
+        $errCode = $result['errCode'];
+        $errMsg = $result['errMsg'];
+        $data = $result['data'];
+        $data = json_decode(json_encode($data));
+        // var_dump($data);
+        // exit;
         return Response::json(array(
             'success' =>true,
             'code' => 1,
-            'size' => round(sizeof($totalSize)/2),
-            'templates' => $templates,
+            'size' => $data->gridcount,
+            'templates' => $data->data,
             'message' => 'hi'
         ));
         //return Response::json($templates);
