@@ -18,6 +18,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Response;
+use App\Http\Traits\CallAPI;
 
 class CompanyController extends Controller
 {
@@ -235,6 +236,16 @@ class CompanyController extends Controller
 
     public function companyAdd($id)
     {
+        $body = [];
+        $result = CallAPI::postAPI('company/getList',$body);
+        $errCode = $result['errCode'];
+        $errMsg = $result['errMsg'];
+        $data = $result['data'];
+        $data = json_decode(json_encode($data));
+        //return Response::json($data->data[0]);
+        // var_dump($data->data->companyCategories);
+        // exit;
+
         $where = array('id' => $id);
         $event = Event::where($where)->first();
         $where = array('status' => 1);
@@ -247,13 +258,13 @@ class CompanyController extends Controller
 
         $countrysSelectOptions = array();
         //$countries = Country::get()->all();
-		$countries = DB::select('select DISTINCT(ccc.country_id), c.country_name from country_cities_view ccc inner join country_cities_view c on ccc.country_id = c.country_id');
-        foreach ($countries as $country) {
-            $countrySelectOption = new SelectOption($country->country_id, $country->country_name);
-        	//$countrySelectOption = new SelectOption($country->id, $country->name);
-            $countrysSelectOptions[] = $countrySelectOption;
-        }
-
+		// $countries = DB::select('select DISTINCT(ccc.country_id), c.country_name from country_cities_view ccc inner join country_cities_view c on ccc.country_id = c.country_id');
+        // foreach ($countries as $country) {
+        //     $countrySelectOption = new SelectOption($country->country_id, $country->country_name);
+        // 	//$countrySelectOption = new SelectOption($country->id, $country->name);
+        //     $countrysSelectOptions[] = $countrySelectOption;
+        // }
+        $countrysSelectOptions = $data->data->countries;
         $citysSelectOptions = array();
         $cities = City::get()->all();
 
@@ -264,26 +275,26 @@ class CompanyController extends Controller
 
         $where = array('status' => 1);
         $categorysSelectOptions = array();
-        $categories = CompanyCategory::where($where)->get()->all();
+        // $categories = CompanyCategory::where($where)->get()->all();
 
-        foreach ($categories as $category) {
-            $categorySelectOption = new SelectOption($category->id, $category->name);
-            $categorysSelectOptions[] = $categorySelectOption;
-        }
-
-        $where = array('status' => 1);
+        // foreach ($categories as $category) {
+        //     $categorySelectOption = new SelectOption($category->id, $category->name);
+        //     $categorysSelectOptions[] = $categorySelectOption;
+        // }
+        $categorysSelectOptions = $data->data->companyCategories;
+        // $where = array('status' => 1);
         $accreditationCategorysSelectOptions = array();
-        $accreditationCategories = AccreditationCategory::where($where)->get()->all();
+        // $accreditationCategories = AccreditationCategory::where($where)->get()->all();
 
-        foreach ($accreditationCategories as $accreditationCategory) {
-            $accreditationCategorysSelectOption = new SelectOption($accreditationCategory->id, $accreditationCategory->name);
-            $accreditationCategorysSelectOptions[] = $accreditationCategorysSelectOption;
-        }
+        // foreach ($accreditationCategories as $accreditationCategory) {
+        //     $accreditationCategorysSelectOption = new SelectOption($accreditationCategory->id, $accreditationCategory->name);
+        //     $accreditationCategorysSelectOptions[] = $accreditationCategorysSelectOption;
+        // }
 
-        $companyStatus1 = new SelectOption(1, 'Active');
-        $companyStatus2 = new SelectOption(0, 'InActive');
-        $companyStatuss = [$companyStatus1, $companyStatus2];
-    
+        // $companyStatus1 = new SelectOption(1, 'Active');
+        // $companyStatus2 = new SelectOption(0, 'InActive');
+        // $companyStatuss = [$companyStatus1, $companyStatus2];
+        $companyStatuss = $data->data->companyStatus;
         $allwoedSize = $event->size;
         $eventcompanies = EventCompany::where(['event_id'=> $id,'parent_id'=> null])->get()->all();
         foreach($eventcompanies as $eventcompnay){

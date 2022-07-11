@@ -150,21 +150,34 @@ class EventAdminController extends Controller
 
     public function Invite($companyId, $eventId)
     {
-        $post = EventCompany::updateOrCreate(['company_id' => $companyId,'event_id'=>$eventId],
-            [
-                'status' => 3
-            ]);
+        $body = [
+            'event_id' => $eventId,
+            'company_id' => $companyId
+        ];
+        $result = CallAPI::postAPI('company/invite',$body);
+        $errCode = $result['errCode'];
+        $errMsg = $result['errMsg'];
+        $data = $result['data'];
+        $data = json_decode(json_encode($data));
+        return Response::json($data->data);
 
-    	$focal_point = DB::select('select * from focal_points f where f.id = ?', [$post->focal_point_id]);
-        $event = Event::where(['id'=>$eventId])->first();
-        $company = Company::where(['id'=>$companyId])->first();
-        // NotificationController::sendAlertNotification($focal_point[0]->account_id, 0, $event->name . ': ' . $company->name . ': ' . 'Event invitation', Route('companyParticipants' , [$companyId, $eventId]));
+        // $post = EventCompany::updateOrCreate(['company_id' => $companyId,'event_id'=>$eventId],
+        //     [
+        //         'status' => 3
+        //     ]);
 
-    	$notification_type = Config::get('enums.notification_types.EIN');
-        NotificationController::sendNotification($notification_type, $event->name, $company->name, $focal_point[0]->account_id, 0,
-            $event->name . ': ' . $company->name . ': ' . 'Event invitation', Route('companyParticipants' , [$companyId, $eventId]));
 
-        return Response::json($post);
+        // send notification for later
+    	// $focal_point = DB::select('select * from focal_points f where f.id = ?', [$post->focal_point_id]);
+        // $event = Event::where(['id'=>$eventId])->first();
+        // $company = Company::where(['id'=>$companyId])->first();
+        // // NotificationController::sendAlertNotification($focal_point[0]->account_id, 0, $event->name . ': ' . $company->name . ': ' . 'Event invitation', Route('companyParticipants' , [$companyId, $eventId]));
+
+    	// $notification_type = Config::get('enums.notification_types.EIN');
+        // NotificationController::sendNotification($notification_type, $event->name, $company->name, $focal_point[0]->account_id, 0,
+        //     $event->name . ': ' . $company->name . ': ' . 'Event invitation', Route('companyParticipants' , [$companyId, $eventId]));
+
+        // return Response::json($post);
     }
 
     public function eventCompanyParticipants($companyId, $eventId)
@@ -445,175 +458,243 @@ class EventAdminController extends Controller
     }
 
     public function getPaticipantsData($companyId,$eventId,$values){
-        if($companyId != 0){
-            $eventcompanies = EventCompany::where(['event_id'=>$eventId,'parent_id'=>$companyId])->get()->all();
-            $companies = "'".$companyId."'";
-            if($eventcompanies != null){
-                foreach($eventcompanies as $eventcompnay){
-                    $companies = $companies.",'".$eventcompnay->company_id."'";
+        // if($companyId != 0){
+        //     $eventcompanies = EventCompany::where(['event_id'=>$eventId,'parent_id'=>$companyId])->get()->all();
+        //     $companies = "'".$companyId."'";
+        //     if($eventcompanies != null){
+        //         foreach($eventcompanies as $eventcompnay){
+        //             $companies = $companies.",'".$eventcompnay->company_id."'";
+        //         }
+        //     }
+        //     $totalSize = DB::select('select t.* , c.* from `temp_' . $eventId . '` t inner join company_staff c on t.id = c.id where c.company_id in ('.$companies.')');
+        // }else{
+        //     $totalSize = DB::select('select t.* , c.* from `temp_' . $eventId . '` t inner join company_staff c on t.id = c.id');
+        // }
+        // //$totalSize = DB::select('select * from companies_view where event_id = ? and parent_id is null', [$id]);
+        // //$totalSize = Template::latest()->get();
+        // $size = 10;
+        // $whereCondition = "";
+        // if($values != null){
+        //     if(str_contains($values,",")){
+        //         $comands = explode(",",$values);
+        //         $skip = $size * $comands[0];
+        //         $c_size = sizeof($comands);
+        //         $i = 1;
+        //         while($i < sizeof($comands)){
+        //             $token = $comands[$i];
+        //             $i = $i + 1;
+        //             $complexityType = $comands[$i];
+        //             if($complexityType == "C"){
+        //                 $i = $i + 1;
+        //                 $condition1 = $comands[$i];
+        //                 $i = $i + 1;
+        //                 $condition1token = $comands[$i];
+        //                 $i = $i + 1;
+        //                 $operator = $comands[$i];
+        //                 $i = $i + 1;
+        //                 $condition2 = $comands[$i];
+        //                 $i = $i + 1;
+        //                 $condition2token = $comands[$i];
+        //                 $whereCondition =  $whereCondition." and ".TemplateController::getConditionPart($token,$condition1,$condition1token) . " ".$operator ." ". TemplateController::getConditionPart($token,$condition2,$condition2token);
+        //             }else{
+        //                 $i = $i + 1;
+        //                 $condition1 = $comands[$i];
+        //                 $i = $i + 1;
+        //                 $condition1token = $comands[$i];
+        //                 $whereCondition = $whereCondition." and ".TemplateController::getConditionPart($token,$condition1,$condition1token);
+        //             }
+        //             $i = $i + 1;
+        //         }
+        //         if($companyId != 0){
+        //             $eventcompanies = EventCompany::where(['event_id'=>$eventId,'parent_id'=>$companyId])->get()->all();
+        //             $companies = "'".$companyId."'";
+        //             if($eventcompanies != null){
+        //                 foreach($eventcompanies as $eventcompnay){
+        //                     $companies = $companies.",'".$eventcompnay->company_id."'";
+        //                 }
+        //             }
+        //             //$totalSize = DB::select('select t.* , c.* from `temp_' . $eventId . '` t inner join company_staff c on t.id = c.id where c.company_id in ('.$companies.')');
+        //             $totalSize = DB::select('select t.* , c.* from `temp_' . $eventId . '` t inner join company_staff c on t.id = c.id where c.company_id in ('.$companies.')'. $whereCondition);
+        //             $participants = DB::select('select t.* , c.* from `temp_' . $eventId . '` t inner join company_staff c on t.id = c.id where c.company_id in ('.$companies.')'. $whereCondition." LIMIT ". $size. " OFFSET ". $skip);
+        //         }else{
+        //             //$totalSize = DB::select('select t.* , c.* from `temp_' . $eventId . '` t inner join company_staff c on t.id = c.id');
+        //             $totalSize = DB::select('select t.* , c.* from `temp_' . $eventId . '` t inner join company_staff c on t.id = c.id where 1=1 '. $whereCondition);
+        //             $participants = DB::select('select t.* , c.* from `temp_' . $eventId . '` t inner join company_staff c on t.id = c.id where 1=1 '. $whereCondition." LIMIT ". $size. " OFFSET ". $skip);
+        //         }
+        //         //$totalSize = DB::select('select * from companies_view where event_id = ? and parent_id is null '. $whereCondition, [$id]);
+        //         //$participants = DB::select('select * from companies_view where event_id = ? and parent_id is null '. $whereCondition." LIMIT ". $size. " OFFSET ". $skip, [$id]);
+        //     }else{
+        //         $skip = $size * $values;
+        //         if($companyId != 0){
+        //             $eventcompanies = EventCompany::where(['event_id'=>$eventId,'parent_id'=>$companyId])->get()->all();
+        //             $companies = "'".$companyId."'";
+        //             if($eventcompanies != null){
+        //                 foreach($eventcompanies as $eventcompnay){
+        //                     $companies = $companies.",'".$eventcompnay->company_id."'";
+        //                 }
+        //             }
+        //             $participants = DB::select('select t.* , c.* from `temp_' . $eventId . '` t inner join company_staff c on t.id = c.id where c.company_id in ('.$companies.') LIMIT '. $size. " OFFSET ". $skip);
+        //         }else{
+        //             $participants = DB::select('select t.* , c.* from `temp_' . $eventId . '` t inner join company_staff c on t.id = c.id LIMIT '. $size. " OFFSET ". $skip);
+        //         }
+        //         //$participants = DB::select('select t.* , c.* from `temp_' . $eventId . '` t inner join company_staff c on t.id = c.id  LIMIT '. $size. " OFFSET ". $skip);
+        //     }
+        // }
+        if($companyId == 0){
+            $offset = 0;
+            if($values != null){
+                if(str_contains($values,",")){
+                    $comands = explode(",",$values);
+                    $offset = $comands[0];
                 }
             }
-            $totalSize = DB::select('select t.* , c.* from `temp_' . $eventId . '` t inner join company_staff c on t.id = c.id where c.company_id in ('.$companies.')');
+            $body = [
+                'eventID' => $eventId,
+                'offset' => $offset,
+                'size' => 10,
+                'filters' => $values
+            ];
+            $result = CallAPI::postAPI('event/participant/getAll',$body);
         }else{
-            $totalSize = DB::select('select t.* , c.* from `temp_' . $eventId . '` t inner join company_staff c on t.id = c.id');
-        }
-        //$totalSize = DB::select('select * from companies_view where event_id = ? and parent_id is null', [$id]);
-        //$totalSize = Template::latest()->get();
-        $size = 10;
-        $whereCondition = "";
-        if($values != null){
-            if(str_contains($values,",")){
-                $comands = explode(",",$values);
-                $skip = $size * $comands[0];
-                $c_size = sizeof($comands);
-                $i = 1;
-                while($i < sizeof($comands)){
-                    $token = $comands[$i];
-                    $i = $i + 1;
-                    $complexityType = $comands[$i];
-                    if($complexityType == "C"){
-                        $i = $i + 1;
-                        $condition1 = $comands[$i];
-                        $i = $i + 1;
-                        $condition1token = $comands[$i];
-                        $i = $i + 1;
-                        $operator = $comands[$i];
-                        $i = $i + 1;
-                        $condition2 = $comands[$i];
-                        $i = $i + 1;
-                        $condition2token = $comands[$i];
-                        $whereCondition =  $whereCondition." and ".TemplateController::getConditionPart($token,$condition1,$condition1token) . " ".$operator ." ". TemplateController::getConditionPart($token,$condition2,$condition2token);
-                    }else{
-                        $i = $i + 1;
-                        $condition1 = $comands[$i];
-                        $i = $i + 1;
-                        $condition1token = $comands[$i];
-                        $whereCondition = $whereCondition." and ".TemplateController::getConditionPart($token,$condition1,$condition1token);
-                    }
-                    $i = $i + 1;
+            $offset = 0;
+            if($values != null){
+                if(str_contains($values,",")){
+                    $comands = explode(",",$values);
+                    $offset = $comands[0];
                 }
-                if($companyId != 0){
-                    $eventcompanies = EventCompany::where(['event_id'=>$eventId,'parent_id'=>$companyId])->get()->all();
-                    $companies = "'".$companyId."'";
-                    if($eventcompanies != null){
-                        foreach($eventcompanies as $eventcompnay){
-                            $companies = $companies.",'".$eventcompnay->company_id."'";
-                        }
-                    }
-                    //$totalSize = DB::select('select t.* , c.* from `temp_' . $eventId . '` t inner join company_staff c on t.id = c.id where c.company_id in ('.$companies.')');
-                    $totalSize = DB::select('select t.* , c.* from `temp_' . $eventId . '` t inner join company_staff c on t.id = c.id where c.company_id in ('.$companies.')'. $whereCondition);
-                    $participants = DB::select('select t.* , c.* from `temp_' . $eventId . '` t inner join company_staff c on t.id = c.id where c.company_id in ('.$companies.')'. $whereCondition." LIMIT ". $size. " OFFSET ". $skip);
-                }else{
-                    //$totalSize = DB::select('select t.* , c.* from `temp_' . $eventId . '` t inner join company_staff c on t.id = c.id');
-                    $totalSize = DB::select('select t.* , c.* from `temp_' . $eventId . '` t inner join company_staff c on t.id = c.id where 1=1 '. $whereCondition);
-                    $participants = DB::select('select t.* , c.* from `temp_' . $eventId . '` t inner join company_staff c on t.id = c.id where 1=1 '. $whereCondition." LIMIT ". $size. " OFFSET ". $skip);
-                }
-                //$totalSize = DB::select('select * from companies_view where event_id = ? and parent_id is null '. $whereCondition, [$id]);
-                //$participants = DB::select('select * from companies_view where event_id = ? and parent_id is null '. $whereCondition." LIMIT ". $size. " OFFSET ". $skip, [$id]);
-            }else{
-                $skip = $size * $values;
-                if($companyId != 0){
-                    $eventcompanies = EventCompany::where(['event_id'=>$eventId,'parent_id'=>$companyId])->get()->all();
-                    $companies = "'".$companyId."'";
-                    if($eventcompanies != null){
-                        foreach($eventcompanies as $eventcompnay){
-                            $companies = $companies.",'".$eventcompnay->company_id."'";
-                        }
-                    }
-                    $participants = DB::select('select t.* , c.* from `temp_' . $eventId . '` t inner join company_staff c on t.id = c.id where c.company_id in ('.$companies.') LIMIT '. $size. " OFFSET ". $skip);
-                }else{
-                    $participants = DB::select('select t.* , c.* from `temp_' . $eventId . '` t inner join company_staff c on t.id = c.id LIMIT '. $size. " OFFSET ". $skip);
-                }
-                //$participants = DB::select('select t.* , c.* from `temp_' . $eventId . '` t inner join company_staff c on t.id = c.id  LIMIT '. $size. " OFFSET ". $skip);
             }
+            $body = [
+                'eventID' => $eventId,
+                'companyID' => $companyId,
+                'offset' => $offset,
+                'size' => 10,
+                'filters' => $values
+            ];
+            $result = CallAPI::postAPI('company/participant/getAll',$body);
+
         }
+        $errCode = $result['errCode'];
+        $errMsg = $result['errMsg'];
+        $data = $result['data'];
+        $data = json_decode(json_encode($data));
+        // var_dump($data);
+        // exit;
         return Response::json(array(
             'success' =>true,
             'code' => 1,
-            'size' => round(sizeof($totalSize)/2),
-            'templates' => $participants,
+            'size' => $data->gridcount,
+            'templates' => $data->data,
             'message' => 'hi'
         ));
+
+
+
+        // return Response::json(array(
+        //     'success' =>true,
+        //     'code' => 1,
+        //     'size' => round(sizeof($totalSize)/2),
+        //     'templates' => $participants,
+        //     'message' => 'hi'
+        // ));
         //return Response::json($templates);
     }
 
     public function Reject($staffId)
     {
-        $where = array('id' => $staffId);
-        $companyStaff = CompanyStaff::where($where)->first();
-        $companyId = $companyStaff->company_id;
-        $eventId = $companyStaff->event_id;
+        $body = [
+            'staff_id' => $staffId
+        ];
+        $result = CallAPI::postAPI('participant/rejectByEventAdmin',$body);
+        $errCode = $result['errCode'];
+        $errMsg = $result['errMsg'];
+        $data = $result['data'];
+        $data = json_decode(json_encode($data));
+        return Response::json($data->data);
+        // $where = array('id' => $staffId);
+        // $companyStaff = CompanyStaff::where($where)->first();
+        // $companyId = $companyStaff->company_id;
+        // $eventId = $companyStaff->event_id;
 
-        $eventWhere = array('id' => $eventId);
-        $event = Event::where($eventWhere)->first();
+        // $eventWhere = array('id' => $eventId);
+        // $event = Event::where($eventWhere)->first();
 
-        $companyWhere = array('id' => $companyId);
-        $company = Company::where($companyWhere)->first();
+        // $companyWhere = array('id' => $companyId);
+        // $company = Company::where($companyWhere)->first();
 
-        $approval = $event->approval_option;
-        $eventCompanies = EventCompany::where(['company_id'=> $companyId ,'event_id'=> $eventId])->first();
-        $focalPoint = FocalPoint::where(['id'=>$eventCompanies->focal_point_id])->first();
-        if ($approval == 1) {
-            DB::update('update company_staff set status = ? where id = ?', [5, $staffId]);
-        	// NotificationController::sendAlertNotification($focalPoint->account_id, $staffId, $event->name . ': ' . $company->name . ': ' . 'Participant rejected', Route('templateFormDetails' , $staffId));
+        // $approval = $event->approval_option;
+        // $eventCompanies = EventCompany::where(['company_id'=> $companyId ,'event_id'=> $eventId])->first();
+        // $focalPoint = FocalPoint::where(['id'=>$eventCompanies->focal_point_id])->first();
+        // if ($approval == 1) {
+        //     DB::update('update company_staff set status = ? where id = ?', [5, $staffId]);
+        // 	// NotificationController::sendAlertNotification($focalPoint->account_id, $staffId, $event->name . ': ' . $company->name . ': ' . 'Participant rejected', Route('templateFormDetails' , $staffId));
 
-        	$notification_type = Config::get('enums.notification_types.PRE');
-            NotificationController::sendNotification($notification_type, $event->name, $company->name, $focalPoint->account_id, $staffId,
-                $event->name . ': ' . $company->name . ': ' . 'Participant rejected',
-                Route('templateFormDetails' , $staffId));
-        } else {
-            if ($approval == 3) {
-                DB::update('update company_staff set status = ? where id = ?', [5, $staffId]);
-            	// NotificationController::sendAlertNotification($focalPoint->account_id, $staffId, $event->name . ': ' . $company->name . ': ' . 'Participant rejected', Route('templateFormDetails' , $staffId));
-            	$notification_type = Config::get('enums.notification_types.PRE');
-                NotificationController::sendNotification($notification_type, $event->name, $company->name, $focalPoint->account_id, $staffId,
-                    $event->name . ': ' . $company->name . ': ' . 'Participant rejected',
-                    Route('templateFormDetails' , $staffId));
-            }
-        }
-        return Response::json($event);
+        // 	$notification_type = Config::get('enums.notification_types.PRE');
+        //     NotificationController::sendNotification($notification_type, $event->name, $company->name, $focalPoint->account_id, $staffId,
+        //         $event->name . ': ' . $company->name . ': ' . 'Participant rejected',
+        //         Route('templateFormDetails' , $staffId));
+        // } else {
+        //     if ($approval == 3) {
+        //         DB::update('update company_staff set status = ? where id = ?', [5, $staffId]);
+        //     	// NotificationController::sendAlertNotification($focalPoint->account_id, $staffId, $event->name . ': ' . $company->name . ': ' . 'Participant rejected', Route('templateFormDetails' , $staffId));
+        //     	$notification_type = Config::get('enums.notification_types.PRE');
+        //         NotificationController::sendNotification($notification_type, $event->name, $company->name, $focalPoint->account_id, $staffId,
+        //             $event->name . ': ' . $company->name . ': ' . 'Participant rejected',
+        //             Route('templateFormDetails' , $staffId));
+        //     }
+        // }
+        // return Response::json($event);
     }
 
     public function RejectToCorrect($staffId, $reason)
     {
-        $where = array('id' => $staffId);
-        $companyStaff = CompanyStaff::where($where)->first();
-        $companyId = $companyStaff->company_id;
-        $eventId = $companyStaff->event_id;
+        $body = [
+            'staff_id' => $staffId,
+            'reason' => $reason
+        ];
+        $result = CallAPI::postAPI('participant/rejectToCorrectByEventAdmin',$body);
+        $errCode = $result['errCode'];
+        $errMsg = $result['errMsg'];
+        $data = $result['data'];
+        $data = json_decode(json_encode($data));
+        return Response::json($data->data);
+        // $where = array('id' => $staffId);
+        // $companyStaff = CompanyStaff::where($where)->first();
+        // $companyId = $companyStaff->company_id;
+        // $eventId = $companyStaff->event_id;
 
-        $eventWhere = array('id' => $eventId);
-        $event = Event::where($eventWhere)->first();
+        // $eventWhere = array('id' => $eventId);
+        // $event = Event::where($eventWhere)->first();
 
-        $companyWhere = array('id' => $companyId);
-        $company = Company::where($companyWhere)->first();
+        // $companyWhere = array('id' => $companyId);
+        // $company = Company::where($companyWhere)->first();
 
-        $approval = $event->approval_option;
-        $eventCompanies = EventCompany::where(['company_id'=> $companyId ,'event_id'=> $eventId])->first();
-        $focalPoint = FocalPoint::where(['id'=>$eventCompanies->focal_point_id])->first();
+        // $approval = $event->approval_option;
+        // $eventCompanies = EventCompany::where(['company_id'=> $companyId ,'event_id'=> $eventId])->first();
+        // $focalPoint = FocalPoint::where(['id'=>$eventCompanies->focal_point_id])->first();
 
-        $approval = $event->approval_option;
-        if ($approval == 1) {
-            DB::update('update company_staff set status = ? where id = ?', [8, $staffId]);
-            DB::update('update company_staff set event_admin_reject_reason = ? where id = ?', [$reason, $staffId]);
-        	// NotificationController::sendAlertNotification($focalPoint->account_id, $staffId, $event->name . ': ' . $company->name . ': ' . 'Participant returend for correction', Route('templateFormDetails' , $staffId));
+        // $approval = $event->approval_option;
+        // if ($approval == 1) {
+        //     DB::update('update company_staff set status = ? where id = ?', [8, $staffId]);
+        //     DB::update('update company_staff set event_admin_reject_reason = ? where id = ?', [$reason, $staffId]);
+        // 	// NotificationController::sendAlertNotification($focalPoint->account_id, $staffId, $event->name . ': ' . $company->name . ': ' . 'Participant returend for correction', Route('templateFormDetails' , $staffId));
 
-        	$notification_type = Config::get('enums.notification_types.PRC');
-            NotificationController::sendNotification($notification_type, $event->name, $company->name, $focalPoint->account_id, $staffId,
-                $event->name . ': ' . $company->name . ': ' . 'Participant returned for correction',
-                Route('templateFormDetails' , $staffId));
-        } else {
-            if ($approval == 3) {
-                DB::update('update company_staff set status = ? where id = ?', [8, $staffId]);
-                DB::update('update company_staff set event_admin_reject_reason = ? where id = ?', [$reason, $staffId]);
-            	// NotificationController::sendAlertNotification($focalPoint->account_id, $staffId, $event->name . ': ' . $company->name . ': ' . 'Participant returend for correction', Route('templateFormDetails' , $staffId));
+        // 	$notification_type = Config::get('enums.notification_types.PRC');
+        //     NotificationController::sendNotification($notification_type, $event->name, $company->name, $focalPoint->account_id, $staffId,
+        //         $event->name . ': ' . $company->name . ': ' . 'Participant returned for correction',
+        //         Route('templateFormDetails' , $staffId));
+        // } else {
+        //     if ($approval == 3) {
+        //         DB::update('update company_staff set status = ? where id = ?', [8, $staffId]);
+        //         DB::update('update company_staff set event_admin_reject_reason = ? where id = ?', [$reason, $staffId]);
+        //     	// NotificationController::sendAlertNotification($focalPoint->account_id, $staffId, $event->name . ': ' . $company->name . ': ' . 'Participant returend for correction', Route('templateFormDetails' , $staffId));
 
-            	$notification_type = Config::get('enums.notification_types.PRC');
-                NotificationController::sendNotification($notification_type, $event->name, $company->name, $focalPoint->account_id, $staffId,
-                    $event->name . ': ' . $company->name . ': ' . 'Participant returned for correction',
-                    Route('templateFormDetails' , $staffId));
-            }
-        }
-        return Response::json($event);
+        //     	$notification_type = Config::get('enums.notification_types.PRC');
+        //         NotificationController::sendNotification($notification_type, $event->name, $company->name, $focalPoint->account_id, $staffId,
+        //             $event->name . ': ' . $company->name . ': ' . 'Participant returned for correction',
+        //             Route('templateFormDetails' , $staffId));
+        //     }
+        // }
+        // return Response::json($event);
     }
 
     public function details($participant_id)
