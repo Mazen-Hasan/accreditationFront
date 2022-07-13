@@ -10,6 +10,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Response;
+use App\Http\Traits\CallAPI;
 
 class FocalPointController extends Controller
 {
@@ -110,122 +111,151 @@ class FocalPointController extends Controller
 
 	public function store(Request $request)
     {
-        if($request->entry_type == 'instant'){
-                $postId = $request->focal_point_id;
-                if ($postId == null) {
-                    $users = User::where(['email' => $request->account_email])->first();
-                    if($users == null){
-                        $user = User::updateOrCreate(['id' => $postId],
-                            ['name' => $request->account_name,
-                                'password' => Hash::make($request->password),
-                                'email' => $request->account_email,
-                             	'is_active' => $request->status
-                            ]);
-                        DB::table('users_roles')->insert(
-                            array(
-                                'user_id' => $user->id,
-                                'role_id' => 3
-                            )
-                        );
-                        $post = FocalPoint::updateOrCreate(['id' => $postId],
-                            ['name' => $request->name,
-                               // 'middle_name' => $request->middle_name,
-                                'last_name' => $request->last_name,
-                                //'email' => $request->email,
-                                'telephone' => $request->telephone,
-                                'mobile' => $request->mobile,
-                                'password' => $request->password,
-                                'account_id' => $user->id,
-                                'status' => $request->status,
-                            ]);
-                    }else{
-                        $focalpoint = FocalPoint::where(['account_id' => $users->id])->first();
-                        if($focalpoint != null){
-                            return Response()->json([
-                                "success" => true,
-                                "id" => $focalpoint->id,
-                                "name" => $focalpoint->name.' '.$focalpoint->middle_name.' '.$focalpoint->last_name,
-                                "code" => 401,
-                                "message" => 'Entered focal point account email already existed in the system with the name '.$focalpoint->name.' '.$focalpoint->middle_name.' '.$focalpoint->last_name .', Do you want to add him/her to the event?'
-                            ]);
-                        }else{
-                            return Response()->json([
-                                "success" => true,
-                                "id" => 0,
-                                "code" => 402,
-                                "message" => 'Sorry, Entered focal point account email already existed in the system with different role'
-                            ]);
-                        }
-                    }
-                } else {
-                    $post = FocalPoint::updateOrCreate(['id' => $postId],
-                        ['name' => $request->name,
-                           // 'middle_name' => $request->middle_name,
-                            'last_name' => $request->last_name,
-                          //  'email' => $request->email,
-                            'telephone' => $request->telephone,
-                            'mobile' => $request->mobile,
-                            'status' => $request->status,
-                        ]);
-                   $user = User::updateOrCreate(['id' => $post->account_id],
-                            [
-                             	'is_active' => $request->status
-                            ]);
-                }
-            return Response::json($post);
-        }else{
-            $postId = $request->post_id;
-            if ($postId == null) {
-                $users = User::where(['email' => $request->account_email])->first();
-                if($users == null){
-                    $user = User::updateOrCreate(['id' => $postId],
-                        ['name' => $request->account_name,
-                            'password' => Hash::make($request->password),
-                            'email' => $request->account_email,
-                         	'is_active' => $request->status,
-                        ]);
-                    DB::table('users_roles')->insert(
-                        array(
-                            'user_id' => $user->id,
-                            'role_id' => 3
-                        )
-                    );
-                    $post = FocalPoint::updateOrCreate(['id' => $postId],
-                        ['name' => $request->name,
-                          //  'middle_name' => $request->middle_name,
-                            'last_name' => $request->last_name,
-                          //  'email' => $request->email,
-                            'telephone' => $request->telephone,
-                            'mobile' => $request->mobile,
-                            'password' => $request->password,
-                            'account_id' => $user->id,
-                            'status' => $request->status,
-                        ]);
-                }else{
-                    return Response()->json([
-                        "success" => true,
-                        "id" => 0,
-                        "code" => 401,
-                        "message" => 'Entered focal point account email already existed in the system'
-                    ]);
-                }
-            } else {
-                $post = FocalPoint::updateOrCreate(['id' => $postId],
-                    ['name' => $request->name,
-                      //  'middle_name' => $request->middle_name,
-                        'last_name' => $request->last_name,
-                     //   'email' => $request->email,
-                        'telephone' => $request->telephone,
-                        'mobile' => $request->mobile,
-                        'status' => $request->status,
-                    ]);
-               $user = User::updateOrCreate(['id' => $post->account_id],
-                            [
-                             	'is_active' => $request->status
-                            ]);
-            }
-        return Response::json($post);
-        }
+        $body = [
+            'entry_type'=> $request->entry_type,
+            'focal_point_id' => 0,
+            'account_email' => $request->account_email,
+            'account_name' => $request->account_name,
+            'password' => $request->password,
+            'name' => $request->name,
+            'last_name' => $request->last_name,
+            'telephone' => $request->telephone,
+            'mobile' => $request->mobile,
+            'status' => $request->status
+        ];
+        $result = CallAPI::postAPI('focalPoint/create',$body);
+        $errCode = $result['errCode'];
+        $errMsg = $result['errMsg'];
+        $data = $result['data'];
+        $data = json_decode(json_encode($data));
+        $body = [
+            'focal_point_email' => $request->account_email
+        ];
+        $result = CallAPI::postAPI('focalPoint/getByEmail',$body);
+        $errCode = $result['errCode'];
+        $errMsg = $result['errMsg'];
+        $data = $result['data'];
+        $data = json_decode(json_encode($data));
+        return Response::json($data->data[0]);
+
+
+        return Response::json($data->data[0]);
+        // if($request->entry_type == 'instant'){
+        //         $postId = $request->focal_point_id;
+        //         if ($postId == null) {
+        //             $users = User::where(['email' => $request->account_email])->first();
+        //             if($users == null){
+        //                 $user = User::updateOrCreate(['id' => $postId],
+        //                     ['name' => $request->account_name,
+        //                         'password' => Hash::make($request->password),
+        //                         'email' => $request->account_email,
+        //                      	'is_active' => $request->status
+        //                     ]);
+        //                 DB::table('users_roles')->insert(
+        //                     array(
+        //                         'user_id' => $user->id,
+        //                         'role_id' => 3
+        //                     )
+        //                 );
+        //                 $post = FocalPoint::updateOrCreate(['id' => $postId],
+        //                     ['name' => $request->name,
+        //                        // 'middle_name' => $request->middle_name,
+        //                         'last_name' => $request->last_name,
+        //                         //'email' => $request->email,
+        //                         'telephone' => $request->telephone,
+        //                         'mobile' => $request->mobile,
+        //                         'password' => $request->password,
+        //                         'account_id' => $user->id,
+        //                         'status' => $request->status,
+        //                     ]);
+        //             }else{
+        //                 $focalpoint = FocalPoint::where(['account_id' => $users->id])->first();
+        //                 if($focalpoint != null){
+        //                     return Response()->json([
+        //                         "success" => true,
+        //                         "id" => $focalpoint->id,
+        //                         "name" => $focalpoint->name.' '.$focalpoint->middle_name.' '.$focalpoint->last_name,
+        //                         "code" => 401,
+        //                         "message" => 'Entered focal point account email already existed in the system with the name '.$focalpoint->name.' '.$focalpoint->middle_name.' '.$focalpoint->last_name .', Do you want to add him/her to the event?'
+        //                     ]);
+        //                 }else{
+        //                     return Response()->json([
+        //                         "success" => true,
+        //                         "id" => 0,
+        //                         "code" => 402,
+        //                         "message" => 'Sorry, Entered focal point account email already existed in the system with different role'
+        //                     ]);
+        //                 }
+        //             }
+        //         } else {
+        //             $post = FocalPoint::updateOrCreate(['id' => $postId],
+        //                 ['name' => $request->name,
+        //                    // 'middle_name' => $request->middle_name,
+        //                     'last_name' => $request->last_name,
+        //                   //  'email' => $request->email,
+        //                     'telephone' => $request->telephone,
+        //                     'mobile' => $request->mobile,
+        //                     'status' => $request->status,
+        //                 ]);
+        //            $user = User::updateOrCreate(['id' => $post->account_id],
+        //                     [
+        //                      	'is_active' => $request->status
+        //                     ]);
+        //         }
+        //     return Response::json($post);
+        // }else{
+        //     $postId = $request->post_id;
+        //     if ($postId == null) {
+        //         $users = User::where(['email' => $request->account_email])->first();
+        //         if($users == null){
+        //             $user = User::updateOrCreate(['id' => $postId],
+        //                 ['name' => $request->account_name,
+        //                     'password' => Hash::make($request->password),
+        //                     'email' => $request->account_email,
+        //                  	'is_active' => $request->status,
+        //                 ]);
+        //             DB::table('users_roles')->insert(
+        //                 array(
+        //                     'user_id' => $user->id,
+        //                     'role_id' => 3
+        //                 )
+        //             );
+        //             $post = FocalPoint::updateOrCreate(['id' => $postId],
+        //                 ['name' => $request->name,
+        //                   //  'middle_name' => $request->middle_name,
+        //                     'last_name' => $request->last_name,
+        //                   //  'email' => $request->email,
+        //                     'telephone' => $request->telephone,
+        //                     'mobile' => $request->mobile,
+        //                     'password' => $request->password,
+        //                     'account_id' => $user->id,
+        //                     'status' => $request->status,
+        //                 ]);
+        //         }else{
+        //             return Response()->json([
+        //                 "success" => true,
+        //                 "id" => 0,
+        //                 "code" => 401,
+        //                 "message" => 'Entered focal point account email already existed in the system'
+        //             ]);
+        //         }
+        //     } else {
+        //         $post = FocalPoint::updateOrCreate(['id' => $postId],
+        //             ['name' => $request->name,
+        //               //  'middle_name' => $request->middle_name,
+        //                 'last_name' => $request->last_name,
+        //              //   'email' => $request->email,
+        //                 'telephone' => $request->telephone,
+        //                 'mobile' => $request->mobile,
+        //                 'status' => $request->status,
+        //             ]);
+        //        $user = User::updateOrCreate(['id' => $post->account_id],
+        //                     [
+        //                      	'is_active' => $request->status
+        //                     ]);
+        //     }
+        // return Response::json($post);
+        // }
     }
 
 

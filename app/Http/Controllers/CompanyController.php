@@ -75,62 +75,81 @@ class CompanyController extends Controller
 
     public function store(Request $request)
     {
-        $companyId = $request->company_Id;
-        $where = array('id' => $request->focal_point);
-        $focal_point = FocalPoint::where($where)->first();
-        if ($companyId == null) {
-            $company = Company::updateOrCreate(['id' => $companyId],
-                ['name' => $request->company_name,
-                    'address' => $request->address,
-                    'telephone' => $request->telephone,
-                    'website' => $request->website,
-                    'country_id' => $request->country,
-                    'city_id' => $request->city,
-                    'category_id' => $request->category,
-                ]);
-            $event_company = EventCompany::updateOrCreate(['id' => 0],
-                ['event_id' => $request->event_id,
-                'company_id' => $company->id,
-                'status' => $request->company_status,
-                'focal_point_id' => $request->focal_point,
-                'size' => $request->size,
-                'need_management' => $request->need_management
-            ]);
-            $companies = DB::select('select * from companies_view where id = ? and event_id = ?',[$company->id,$request->event_id]);
-            foreach($companies as $company1){
-                $company = $company1;
-            }
-        } else {
+        $body = [
+            "name"=> $request->company_name,
+            "address"=> $request->address,
+            "telephone"=> $request->telephone,
+            "website"=> $request->website,
+            "country_id"=> $request->country,
+            "city_id"=> $request->city,
+            "category_id"=> $request->category,
+            "status"=> $request->company_status,
+            "focal_point_id" => $request->focal_point,
+            "event_id" => $request->event_id,
+            "size"=> $request->size,
+            "need_management"=> $request->need_management
+        ];
+        $result = CallAPI::postAPI('company/create',$body);
+        $errCode = $result['errCode'];
+        $errMsg = $result['errMsg'];
+        $data = $result['data'];
+        $data = json_decode(json_encode($data));
+        // $companyId = $request->company_Id;
+        // $where = array('id' => $request->focal_point);
+        // $focal_point = FocalPoint::where($where)->first();
+        // if ($companyId == null) {
+        //     $company = Company::updateOrCreate(['id' => $companyId],
+        //         ['name' => $request->company_name,
+        //             'address' => $request->address,
+        //             'telephone' => $request->telephone,
+        //             'website' => $request->website,
+        //             'country_id' => $request->country,
+        //             'city_id' => $request->city,
+        //             'category_id' => $request->category,
+        //         ]);
+        //     $event_company = EventCompany::updateOrCreate(['id' => 0],
+        //         ['event_id' => $request->event_id,
+        //         'company_id' => $company->id,
+        //         'status' => $request->company_status,
+        //         'focal_point_id' => $request->focal_point,
+        //         'size' => $request->size,
+        //         'need_management' => $request->need_management
+        //     ]);
+        //     $companies = DB::select('select * from companies_view where id = ? and event_id = ?',[$company->id,$request->event_id]);
+        //     foreach($companies as $company1){
+        //         $company = $company1;
+        //     }
+        // } else {
 
-            $where = array('id' => $companyId);
-            $company = Company::where($where)->first();
-            $status = $company->status;
-            if ($request->company_status == 0) {
-                $status = 0;
-            } else {
-                if ($company->status != 3) {
-                    $status = $request->company_status;
-                }
-            }
-            $company = Company::updateOrCreate(['id' => $companyId],
-                ['name' => $request->company_name,
-                    'address' => $request->address,
-                    'telephone' => $request->telephone,
-                    'website' => $request->website,
-                    'country_id' => $request->country,
-                    'city_id' => $request->city,
-                    'category_id' => $request->category,
-                ]);
-                $event_company = EventCompany::updateOrCreate(['event_id' => $request->event_id,'company_id' => $companyId],
-                [
-                'status' => $request->company_status,
-                'focal_point_id' => $request->focal_point,
-                'size' => $request->size,
-                'need_management' => $request->need_management
-            ]); 
-        }
+        //     $where = array('id' => $companyId);
+        //     $company = Company::where($where)->first();
+        //     $status = $company->status;
+        //     if ($request->company_status == 0) {
+        //         $status = 0;
+        //     } else {
+        //         if ($company->status != 3) {
+        //             $status = $request->company_status;
+        //         }
+        //     }
+        //     $company = Company::updateOrCreate(['id' => $companyId],
+        //         ['name' => $request->company_name,
+        //             'address' => $request->address,
+        //             'telephone' => $request->telephone,
+        //             'website' => $request->website,
+        //             'country_id' => $request->country,
+        //             'city_id' => $request->city,
+        //             'category_id' => $request->category,
+        //         ]);
+        //         $event_company = EventCompany::updateOrCreate(['event_id' => $request->event_id,'company_id' => $companyId],
+        //         [
+        //         'status' => $request->company_status,
+        //         'focal_point_id' => $request->focal_point,
+        //         'size' => $request->size,
+        //         'need_management' => $request->need_management
+        //     ]); 
+        // }
 
-        return Response::json($company);
+        return Response::json($data->data);
     }
 
     public function edit($id, $eventid)
@@ -405,8 +424,18 @@ class CompanyController extends Controller
 
     public function getCities($countrytId)
     {
-        $cities = DB::select('select * from cities c where c.country_id = ? ',[$countrytId]);
 
+        $body = [
+            'country_id' => $countrytId
+        ];
+        $result = CallAPI::postAPI('company/city/getAll',$body);
+        $errCode = $result['errCode'];
+        $errMsg = $result['errMsg'];
+        $data = $result['data'];
+        $data = json_decode(json_encode($data));
+        //$cities = DB::select('select * from cities c where c.country_id = ? ',[$countrytId]);
+        $cities = $data->data;
+        //var_dump($data->data);
         $subcount = 0;
         $citySelectOptions = array();
         foreach ($cities as $city) {
