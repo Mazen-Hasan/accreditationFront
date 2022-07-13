@@ -22,8 +22,8 @@
                                     <a class="url-nav" href="{{route('events')}}">
                                         <span>Events:</span>
                                     </a>
-                                    <a class="url-nav" href="{{route('EventController.show',[$event->id])}}">
-                                        {{$event->name}}
+                                    <a class="url-nav" href="{{route('EventController.show',[$event->event_id])}}">
+                                        {{$event->event_name}}
                                     </a> /
                                     Accreditation Categories
                                 </h4>
@@ -43,7 +43,7 @@
                                     </i>
                                 </a>
                                 @role('super-admin')
-                                @if($event->status < 3)
+                                @if($event->can_edit == 1)
                                 <a href="javascript:void(0)" id="add-event-security-category" class="add-hbtn" title="Add">
                                     <i>
                                         <img src="{{ asset('images/add.png') }}" alt="Add">
@@ -73,16 +73,16 @@
     </div>
 
     <!-- add new security officer modal-->
-    <div class="modal fade" id="event-security-category-modal" aria-hidden="true">
+    <div class="modal fade" id="event-accreditation-category-modal" aria-hidden="true">
         <div class="modal-dialog">
             <div class="modal-content">
                 <div class="modal-header">
                     <h4 class="modal-title" id="modalTitle"></h4>
                 </div>
                 <div class="modal-body">
-                    <form id="eventSecurityCategoryForm" name="eventSecurityCategoryForm" class="form-horizontal">
+                    <form id="eventAccreditationCategoryForm" name="eventAccreditationCategoryForm" class="form-horizontal">
                         <input style="visibility: hidden" type="text" name="event_id" id="event_id"
-                               value="{{$event->id}}">
+                               value="{{$event->event_id}}">
                         <div class="row">
                             <div class="col-md-12">
                                 <div class="form-group col">
@@ -90,9 +90,9 @@
                                     <div class="col-sm-12">
                                         <select id="accreditation_category_id" name="accreditation_category_id" required="">
                                             <option value="default">Please select Accreditation Category</option>
-                                            @foreach ($accreditationCategories as $accreditationCategory)
-                                                <option value="{{ $accreditationCategory->id }}"
-                                                >{{ $accreditationCategory->name }}</option>
+                                            @foreach ($accreditation_categories as $accreditation_category)
+                                                <option value="{{ $accreditation_category->accreditation_category_id }}"
+                                                >{{ $accreditation_category->accreditation_category_name }}</option>
                                             @endforeach
                                         </select>
                                     </div>
@@ -120,7 +120,7 @@
                 </div>
                 <div class="modal-body">
                     <div>
-                        <input type="hidden" id="curr_security_category_id">
+                        <input type="hidden" id="curr_accreditation_category_id">
                         <label class="col-sm-12 confirm-text" id="confirmText"></label>
                     </div>
 
@@ -138,30 +138,7 @@
             </div>
         </div>
     </div>
-    <div class="modal fade" id="error-pop-up-modal" tabindex="-1" data-bs-backdrop="static"
-         data-bs-keyboard="false" role="dialog" aria-hidden="true">
-        <div class="modal-dialog" role="document">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title" id="errorTitle"></h5>
-                </div>
-                <div class="modal-body">
-                    <div>
-                        <label class="col-sm-12 confirm-text" id="errorText"></label>
-                    </div>
-                    <div class="row">
-                        <div class="col-sm-4"></div>
-                        <div class="col-sm-4">
-                            <button type="button" class="btn-cancel" data-dismiss="modal" id="btn-ok">OK
-                            </button>
-                        </div>
-                        <div class="col-sm-4">
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
+    <!-- loader modal -->
     <div class="modal" id="loader-modal" tabindex="-1" data-backdrop="static" data-keyboard="false"
          role="dialog" aria-hidden="true">
         <div class="modal-dialog" role="document" style="width: 250px">
@@ -175,6 +152,29 @@
                             <label class="loading">
                                 loading...
                             </label>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- error modal -->
+    <div class="modal fade" id="error-pop-up-modal" tabindex="-1" data-bs-backdrop="static"
+         data-bs-keyboard="false" role="dialog" aria-hidden="true">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="errorTitle">Error</h5>
+                </div>
+                <div class="modal-body">
+                    <div>
+                        <label class="col-sm-12 confirm-text" id="errorText"></label>
+                    </div>
+                    <div class="modal-footer">
+                        <div class="col-sm-12">
+                            <button type="submit" class="btn-cancel" data-dismiss="modal" value="create">OK
+                            </button>
                         </div>
                     </div>
                 </div>
@@ -204,12 +204,12 @@
                 processing: true,
                 serverSide: true,
                 ajax: {
-                    url: "{{ route('eventAccreditationCategories',[$event->id]) }}",
+                    url: "{{ route('eventAccreditationCategories',[$event->event_id]) }}",
                     type: 'GET',
                 },
                 columns: [
                     {data: 'accreditation_category_id', name: 'accreditation_category_id', 'visible': false},
-                    {data: 'name', name: 'name'},
+                    {data: 'accreditation_category_name', name: 'accreditation_category_name'},
                     {data: 'action', name: 'action', orderable: false},
                 ],
                 order: [[0, 'desc']]
@@ -227,15 +227,15 @@
 
             $('#add-event-security-category').click(function () {
                 $('#btn-save').val("add-event-security-officer");
-                $('#event-security-category-modal').trigger("reset");
-                $('#modalTitle').html("Add Accrediation Category");
-                $('#event-security-category-modal').modal('show');
+                $('#eventAccreditationCategoryForm').trigger("reset");
+                $('#modalTitle').html("Add Accreditation Category");
+                $('#event-accreditation-category-modal').modal('show');
             });
 
             $('body').on('click', '#delete-event-accreditation-category', function () {
                 var security_category_id = $(this).data("id");
                 $('#confirmTitle').html('Remove security category');
-                $('#curr_security_category_id').val(security_category_id);
+                $('#curr_accreditation_category_id').val(security_category_id);
                 var confirmText = 'Are you sure you want to remove this event accreditation category?';
                 $('#confirmText').html(confirmText);
                 $('#delete-event-security-category-confirm-modal').modal('show');
@@ -246,27 +246,44 @@
 
                 $(this).closest('.modal').one('hidden.bs.modal', function () {
                     if ($button[0].id === 'btn-yes') {
-                        var security_category_id = $('#curr_security_category_id').val();
-                        var url = "{{ route('eventAccreditationCategoriesRemove', ":id") }}";
-                        url = url.replace(':id', security_category_id);
+
+                        $('#btn-save').html('Sending..');
+                        $('#loader-modal').modal('show');
+                        var event_id = $('#event_id').val();
+                        var accreditation_category_id = $('#curr_accreditation_category_id').val();
+
+                        var url = "{{ route('eventAccreditationCategoryRemove', [":event_id",":accreditation_category_id"]) }}";
+                        url = url.replace(':event_id', event_id);
+                        url = url.replace(':accreditation_category_id', accreditation_category_id);
+
                         $.ajax({
                             type: "get",
                             url: url,
                             success: function (data) {
-                                var oTable = $('#laravel_datatable').dataTable();
-                                oTable.fnDraw(false);
+                                $('#loader-modal').modal('hide');
+                                if (data['errCode'] == '1') {
+                                    $('#loader-modal').modal('hide');
+                                    var oTable = $('#laravel_datatable').dataTable();
+                                    oTable.fnDraw(false);
+                                } else {
+                                    $('#errorText').html(data['errMsg']);
+                                    $('#error-pop-up-modal').modal('show');
+                                }
                             },
                             error: function (data) {
-                                console.log('Error:', data);
+                                $('#loader-modal').modal('hide');
+                                $('#errorText').html(data['errMsg']);
+                                $('#error-pop-up-modal').modal('show');
                             }
                         });
+                        $('#btn-save').html('Save');
                     }
                 });
             });
         });
 
-        if ($("#eventSecurityCategoryForm").length > 0) {
-            $("#eventSecurityCategoryForm").validate({
+        if ($("#eventAccreditationCategoryForm").length > 0) {
+            $("#eventAccreditationCategoryForm").validate({
                 rules: {
                     accreditation_category_id: {valueNotEquals: "default"}
                 },
@@ -275,29 +292,31 @@
                     $('#btn-save').html('Sending..');
                     $('#loader-modal').modal('show');
                     $.ajax({
-                        data: $('#eventSecurityCategoryForm').serialize(),
-                        url: "{{ route('eventAccreditationCategoriesAdd') }}",
+                        data: $('#eventAccreditationCategoryForm').serialize(),
+                        url: "{{ route('eventAccreditationCategoryAdd') }}",
                         type: "POST",
                         dataType: 'json',
                         success: function (data) {
                             $('#loader-modal').modal('hide');
-                            $('#eventSecurityCategoryForm').trigger("reset");
-                            $('#event-security-category-modal').modal('hide');
-                            $('#btn-save').html('Save');
-                            var oTable = $('#laravel_datatable').dataTable();
-                            oTable.fnDraw(false);
+                            $('#eventAccreditationCategoryForm').trigger("reset");
+                            $('#event-accreditation-category-modal').modal('hide');
+                            if(data['errCode']==1){
+                                var oTable = $('#laravel_datatable').dataTable();
+                                oTable.fnDraw(false);
+                            }
+                            else{
+                                $('#errorText').html(data['errMsg']);
+                                $('#error-pop-up-modal').modal('show');
+                            }
                         },
                         error: function (data) {
                             $('#loader-modal').modal('hide');
-                            $('#event-security-category-modal').modal('hide');
-                            $('#btn-save').html('Save');
-                            $('#errorTitle').html('Error: Duplicate accrediation category');
-                            $('#errorText').html('Cant insert duplicate accreditation category');
+                            $('#event-accreditation-category-modal').modal('hide');
+                            $('#errorText').html(data['errMsg']);
                             $('#error-pop-up-modal').modal('show');
-                            console.log('Error:', data);
-                            //$('#btn-save').html('Save Changes');
                         }
                     });
+                    $('#btn-save').html('Save');
                 }
             })
         }

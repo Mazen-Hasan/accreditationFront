@@ -222,19 +222,29 @@ Route::group(['middleware' => 'role:super-admin'], function () {
 
     Route::get('/events', [App\Http\Controllers\EventController::class, 'index'])->name('events');
     Route::get('/eventsShowAll/{status}', [App\Http\Controllers\EventController::class, 'showAll'])->name('eventsShowall');
+
+    //Event admins
     Route::get('/event-admins/{event_id}', [App\Http\Controllers\EventController::class, 'eventAdmins'])->name('eventAdmins');
-    Route::get('/event-admins-remove/{id}', [App\Http\Controllers\EventController::class, 'eventAdminsRemove'])->name('eventAdminsRemove');
-    Route::post('/event-admins-add', [App\Http\Controllers\EventController::class, 'eventAdminsAdd'])->name('eventAdminsAdd');
+    Route::get('/event-admins-remove/{event_id}/{event_admin_id}', [App\Http\Controllers\EventController::class, 'eventAdminRemove'])->name('eventAdminRemove');
+    Route::post('/event-admins-add', [App\Http\Controllers\EventController::class, 'eventAdminAdd'])->name('eventAdminAdd');
+
+    //Security officers
     Route::get('/event-security-officers/{id}', [App\Http\Controllers\EventController::class, 'eventSecurityOfficers'])->name('eventSecurityOfficers');
-    Route::get('/event-security-officers-remove/{id}', [App\Http\Controllers\EventController::class, 'eventSecurityOfficersRemove'])->name('eventSecurityOfficersRemove');
-    Route::post('/event-security-officers-add', [App\Http\Controllers\EventController::class, 'eventSecurityOfficersAdd'])->name('eventSecurityOfficersAdd');
+    Route::get('/event-security-officers-remove/{event_id}/{security_officer_id}', [App\Http\Controllers\EventController::class, 'eventSecurityOfficerRemove'])->name('eventSecurityOfficerRemove');
+    Route::post('/event-security-officers-add', [App\Http\Controllers\EventController::class, 'eventSecurityOfficerAdd'])->name('eventSecurityOfficerAdd');
+
     Route::get('/event-security-categories/{id}', [App\Http\Controllers\EventController::class, 'eventSecurityCategories'])->name('eventSecurityCategories');
-    Route::get('/event-security-categories-remove/{id}', [App\Http\Controllers\EventController::class, 'eventSecurityCategoriesRemove'])->name('eventSecurityCategoriesRemove');
-    Route::post('/event-security-categories-add', [App\Http\Controllers\EventController::class, 'eventSecurityCategoriesAdd'])->name('eventSecurityCategoriesAdd');
+    Route::get('/event-security-categories-remove/{event_id}/{security_category_id}', [App\Http\Controllers\EventController::class, 'eventSecurityCategoryRemove'])->name('eventSecurityCategoryRemove');
+    Route::post('/event-security-categories-add', [App\Http\Controllers\EventController::class, 'eventSecurityCategoryAdd'])->name('eventSecurityCategoryAdd');
+
     Route::get('/event-check-same-organizer/{id}', [App\Http\Controllers\EventController::class, 'eventCheckSameEventOrganizer'])->name('eventCheckSameEventOrganizer');
+
+    //Event accreditation categories
     Route::get('/event-accreditation-categories/{id}', [App\Http\Controllers\EventController::class, 'eventAccreditationCategories'])->name('eventAccreditationCategories');
-    Route::get('/event-accreditation-categories-remove/{id}', [App\Http\Controllers\EventController::class, 'eventAccreditationCategoriesRemove'])->name('eventAccreditationCategoriesRemove');
-    Route::post('/event-accreditation-categories-add', [App\Http\Controllers\EventController::class, 'eventAccreditationCategoriesAdd'])->name('eventAccreditationCategoriesAdd');
+    Route::get('/event-accreditation-categories-remove/{id}/{accreditation_category_id}', [App\Http\Controllers\EventController::class, 'eventAccreditationCategoryRemove'])->name('eventAccreditationCategoryRemove');
+    Route::post('/event-accreditation-categories-add', [App\Http\Controllers\EventController::class, 'eventAccreditationCategoryAdd'])->name('eventAccreditationCategoryAdd');
+
+
     Route::get('/event-add', [App\Http\Controllers\EventController::class, 'eventAdd'])->name('eventAdd');
     Route::get('/event-edit/{id}', [App\Http\Controllers\EventController::class, 'edit'])->name('eventEdit');
     Route::get('/titles', [App\Http\Controllers\TitleController::class, 'index'])->name('titles');

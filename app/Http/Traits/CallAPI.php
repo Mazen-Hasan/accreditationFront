@@ -14,14 +14,14 @@ trait CallAPI
 
 
         //Super admin
-        //$token = 'ffe40d9f-fe99-11ec-a655-e8d8d1fd9cf6';
+        $token = 'dc84b0ba-0234-11ed-a655-e8d8d1fd9cf6';
         //for ivan
         //$token = '3d7a48e4-f1d1-11ec-be2a-aae9fe74b1d2';
 
         //event admin 1
         //$token = 'b084e1b2-fa23-11ec-a655-e8d8d1fd9cf6';
         ////for ivan
-        $token = 'a11f33a0-007c-11ed-be2a-aae9fe74b1d2';
+//        $token = 'a11f33a0-007c-11ed-be2a-aae9fe74b1d2';
 
         //company admin
         //$token = '54d86938-fa25-11ec-a655-e8d8d1fd9cf6';
@@ -45,15 +45,23 @@ trait CallAPI
         //     ]);
         // }
 
-        $res = $client->post($apiName, [
-            'body' => json_encode($body)
-        ]);
+        try{
+            $res = $client->post($apiName, [
+                'body' => json_encode($body)
+            ]);
 
-        $resJson = (json_decode($res->getBody()->getContents()));
-        $result['status'] = true;
-        $result['errCode'] = $resJson->errCode;
-        $result['errMsg'] = $resJson->errMsg;
-        $result['data'] = json_decode(json_encode($resJson->data), true);;
+            $resJson = (json_decode($res->getBody()->getContents()));
+            $result['status'] = true;
+            $result['errCode'] = $resJson->errCode;
+            $result['errMsg'] = $resJson->errMsg;
+            $result['data'] = json_decode(json_encode($resJson->data), true);;
+        }catch (\Exception $e) {
+            $result['status'] = true;
+            $result['errCode'] = '-999';
+            $result['errMsg'] = 'General error occurred';
+//            $result['errMsg'] = $e->getMessage();
+            $result['data'] = '';
+        }
 
         return $result;
     }

@@ -23,8 +23,8 @@
                                     <a class="url-nav" href="{{route('events')}}">
                                         <span>Events:</span>
                                     </a>
-                                    <a class="url-nav" href="{{route('EventController.show',[$event->id])}}">
-                                        {{$event->name}}
+                                    <a class="url-nav" href="{{route('EventController.show',[$event->event_id])}}">
+                                        {{$event->event_name}}
                                     </a> /
                                     Security Categories
                                 </h4>
@@ -44,7 +44,7 @@
                                     </i>
                                 </a>
                                 @role('super-admin')
-                                @if($event->status < 3)
+                                @if($event->can_edit == 1)
                                 <a href="javascript:void(0)" id="add-event-security-category" class="add-hbtn" title="Add">
                                     <i>
                                         <img src="{{ asset('images/add.png') }}" alt="Add">
@@ -83,7 +83,7 @@
                 <div class="modal-body">
                     <form id="eventSecurityCategoryForm" name="eventSecurityCategoryForm" class="form-horizontal">
                         <input style="visibility: hidden" type="text" name="event_id" id="event_id"
-                               value="{{$event->id}}">
+                               value="{{$event->event_id}}">
                         <div class="row">
                             <div class="col-md-12">
                                 <div class="form-group col">
@@ -91,9 +91,9 @@
                                     <div class="col-sm-12">
                                         <select id="security_category_id" name="security_category_id" required="">
                                             <option value="default">Please select Security Category</option>
-                                            @foreach ($securityCategories as $securityCategory)
-                                                <option value="{{ $securityCategory->id }}"
-                                                >{{ $securityCategory->name }}</option>
+                                            @foreach ($security_categories as $security_category)
+                                                <option value="{{ $security_category->security_category_id }}"
+                                                >{{ $security_category->security_category_name }}</option>
                                             @endforeach
                                         </select>
                                     </div>
@@ -139,6 +139,7 @@
             </div>
         </div>
     </div>
+    <!-- loader modal -->
     <div class="modal" id="loader-modal" tabindex="-1" data-backdrop="static" data-keyboard="false"
          role="dialog" aria-hidden="true">
         <div class="modal-dialog" role="document" style="width: 250px">
@@ -152,6 +153,29 @@
                             <label class="loading">
                                 loading...
                             </label>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- error modal -->
+    <div class="modal fade" id="error-pop-up-modal" tabindex="-1" data-bs-backdrop="static"
+         data-bs-keyboard="false" role="dialog" aria-hidden="true">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="errorTitle">Error</h5>
+                </div>
+                <div class="modal-body">
+                    <div>
+                        <label class="col-sm-12 confirm-text" id="errorText"></label>
+                    </div>
+                    <div class="modal-footer">
+                        <div class="col-sm-12">
+                            <button type="submit" class="btn-cancel" data-dismiss="modal" value="create">OK
+                            </button>
                         </div>
                     </div>
                 </div>
@@ -181,12 +205,12 @@
                 processing: true,
                 serverSide: true,
                 ajax: {
-                    url: "{{ route('eventSecurityCategories',[$event->id]) }}",
+                    url: "{{ route('eventSecurityCategories',[$event->event_id]) }}",
                     type: 'GET',
                 },
                 columns: [
                     {data: 'security_category_id', name: 'security_category_id', 'visible': false},
-                    {data: 'name', name: 'name'},
+                    {data: 'security_category_name', name: 'security_category_name'},
                     {data: 'action', name: 'action', orderable: false},
                 ],
                 order: [[0, 'desc']]
@@ -223,23 +247,36 @@
 
                 $(this).closest('.modal').one('hidden.bs.modal', function () {
                     if ($button[0].id === 'btn-yes') {
-                        var security_category_id = $('#curr_security_category_id').val();
-                        var url = "{{ route('eventSecurityCategoriesRemove', ":id") }}";
-                        url = url.replace(':id', security_category_id);
+                        $('#btn-save').html('Sending..');
                         $('#loader-modal').modal('show');
+                        var event_id = $('#event_id').val();
+                        var security_category_id = $('#curr_security_category_id').val();
+
+                        var url = "{{ route('eventSecurityCategoryRemove', [":event_id",":security_category_id"]) }}";
+                        url = url.replace(':event_id', event_id);
+                        url = url.replace(':security_category_id', security_category_id);
+
                         $.ajax({
                             type: "get",
                             url: url,
                             success: function (data) {
                                 $('#loader-modal').modal('hide');
-                                var oTable = $('#laravel_datatable').dataTable();
-                                oTable.fnDraw(false);
+                                if (data['errCode'] == '1') {
+                                    $('#loader-modal').modal('hide');
+                                    var oTable = $('#laravel_datatable').dataTable();
+                                    oTable.fnDraw(false);
+                                } else {
+                                    $('#errorText').html(data['errMsg']);
+                                    $('#error-pop-up-modal').modal('show');
+                                }
                             },
                             error: function (data) {
                                 $('#loader-modal').modal('hide');
-                                console.log('Error:', data);
+                                $('#errorText').html(data['errMsg']);
+                                $('#error-pop-up-modal').modal('show');
                             }
                         });
+                        $('#btn-save').html('Save');
                     }
                 });
             });
@@ -252,27 +289,34 @@
                 },
 
                 submitHandler: function (form) {
-                    $('#loader-modal').modal('show');
                     $('#btn-save').html('Sending..');
+                    $('#loader-modal').modal('show');
                     $.ajax({
                         data: $('#eventSecurityCategoryForm').serialize(),
-                        url: "{{ route('eventSecurityCategoriesAdd') }}",
+                        url: "{{ route('eventSecurityCategoryAdd') }}",
                         type: "POST",
                         dataType: 'json',
                         success: function (data) {
                             $('#loader-modal').modal('hide');
                             $('#eventSecurityCategoryForm').trigger("reset");
                             $('#event-security-category-modal').modal('hide');
-                            $('#btn-save').html('Save Changes');
-                            var oTable = $('#laravel_datatable').dataTable();
-                            oTable.fnDraw(false);
+                            if(data['errCode']==1){
+                                var oTable = $('#laravel_datatable').dataTable();
+                                oTable.fnDraw(false);
+                            }
+                            else{
+                                $('#errorText').html(data['errMsg']);
+                                $('#error-pop-up-modal').modal('show');
+                            }
                         },
                         error: function (data) {
                             $('#loader-modal').modal('hide');
-                            console.log('Error:', data);
-                            $('#btn-save').html('Save Changes');
+                            $('#event-security-category-modal').modal('hide');
+                            $('#errorText').html(data['errMsg']);
+                            $('#error-pop-up-modal').modal('show');
                         }
                     });
+                    $('#btn-save').html('Save');
                 }
             })
         }

@@ -23,8 +23,8 @@
                                     <a class="url-nav" href="{{route('events')}}">
                                         <span>Events:</span>
                                     </a>
-                                    <a class="url-nav" href="{{route('EventController.show',[$event->id])}}">
-                                        {{$event->name}}
+                                    <a class="url-nav" href="{{route('EventController.show',[$event->event_id])}}">
+                                        {{$event->event_name}}
                                     </a> /
                                     security Officers
                                 </h4>
@@ -44,7 +44,7 @@
                                     </i>
                                 </a>
                                 @role('super-admin')
-                                @if($event->status < 3)
+                                @if($event->can_edit == 1)
                                 <a href="javascript:void(0)" id="add-event-security-officer" class="add-hbtn" title="Add">
                                     <i>
                                         <img src="{{ asset('images/add.png') }}" alt="Add">
@@ -83,7 +83,7 @@
                 <div class="modal-body">
                     <form id="eventSecurityOfficerForm" name="eventSecurityOfficerForm" class="form-horizontal">
                         <input style="visibility: hidden" type="text" name="event_id" id="event_id"
-                               value="{{$event->id}}">
+                               value="{{$event->event_id}}">
 
                         <div class="row">
                             <div class="col-md-12">
@@ -92,9 +92,9 @@
                                     <div class="col-sm-12">
                                         <select id="security_officer_id" name="security_officer_id" required="">
                                             <option value="default">Please select Security Officer</option>
-                                            @foreach ($securityOfficers as $securityOfficer)
-                                                <option value="{{ $securityOfficer->user_id }}"
-                                                >{{ $securityOfficer->user_name }}</option>
+                                            @foreach ($security_officers as $security_officer)
+                                                <option value="{{ $security_officer->user_id }}"
+                                                >{{ $security_officer->user_name }}</option>
                                             @endforeach
                                         </select>
                                     </div>
@@ -140,30 +140,8 @@
             </div>
         </div>
     </div>
-	<div class="modal fade" id="error-pop-up-modal" tabindex="-1" data-bs-backdrop="static"
-         data-bs-keyboard="false" role="dialog" aria-hidden="true">
-        <div class="modal-dialog" role="document">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title" id="errorTitle"></h5>
-                </div>
-                <div class="modal-body">
-                    <div>
-                        <label class="col-sm-12 confirm-text" id="errorText"></label>
-                    </div>
-                    <div class="row">
-                        <div class="col-sm-4"></div>
-                        <div class="col-sm-4">
-                            <button type="button" class="btn-cancel" data-dismiss="modal" id="btn-ok">OK
-                            </button>
-                        </div>
-                        <div class="col-sm-4">
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
+
+    <!-- loader modal -->
     <div class="modal" id="loader-modal" tabindex="-1" data-backdrop="static" data-keyboard="false"
          role="dialog" aria-hidden="true">
         <div class="modal-dialog" role="document" style="width: 250px">
@@ -177,6 +155,29 @@
                             <label class="loading">
                                 loading...
                             </label>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- error modal -->
+    <div class="modal fade" id="error-pop-up-modal" tabindex="-1" data-bs-backdrop="static"
+         data-bs-keyboard="false" role="dialog" aria-hidden="true">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="errorTitle">Error</h5>
+                </div>
+                <div class="modal-body">
+                    <div>
+                        <label class="col-sm-12 confirm-text" id="errorText"></label>
+                    </div>
+                    <div class="modal-footer">
+                        <div class="col-sm-12">
+                            <button type="submit" class="btn-cancel" data-dismiss="modal" value="create">OK
+                            </button>
                         </div>
                     </div>
                 </div>
@@ -207,11 +208,11 @@
                 processing: true,
                 serverSide: true,
                 ajax: {
-                    url: "{{ route('eventSecurityOfficers',[$event->id]) }}",
+                    url: "{{ route('eventSecurityOfficers',[$event->event_id]) }}",
                     type: 'GET',
                 },
                 columns: [
-                    {data: 'security_officer_id', name: 'security_officer_id', 'visible': false},
+                    {data: 'user_id', name: 'user_id', 'visible': false},
                     {data: 'name', name: 'name'},
                     {data: 'action', name: 'action', orderable: false},
                 ],
@@ -249,23 +250,37 @@
 
                 $(this).closest('.modal').one('hidden.bs.modal', function () {
                     if ($button[0].id === 'btn-yes') {
-                        var security_officer_id = $('#curr_security_officer_id').val();
-                        var url = "{{ route('eventSecurityOfficersRemove', ":id") }}";
-                        url = url.replace(':id', security_officer_id);
+
+                        $('#btn-save').html('Sending..');
                         $('#loader-modal').modal('show');
+                        var event_id = $('#event_id').val();
+                        var security_officer_id = $('#curr_security_officer_id').val();
+
+                        var url = "{{ route('eventSecurityOfficerRemove', [":event_id",":security_officer_id"]) }}";
+                        url = url.replace(':event_id', event_id);
+                        url = url.replace(':security_officer_id', security_officer_id);
+
                         $.ajax({
                             type: "get",
                             url: url,
                             success: function (data) {
                                 $('#loader-modal').modal('hide');
-                                var oTable = $('#laravel_datatable').dataTable();
-                                oTable.fnDraw(false);
+                                if (data['errCode'] == '1') {
+                                    $('#loader-modal').modal('hide');
+                                    var oTable = $('#laravel_datatable').dataTable();
+                                    oTable.fnDraw(false);
+                                } else {
+                                    $('#errorText').html(data['errMsg']);
+                                    $('#error-pop-up-modal').modal('show');
+                                }
                             },
                             error: function (data) {
                                 $('#loader-modal').modal('hide');
-                                console.log('Error:', data);
+                                $('#errorText').html(data['errMsg']);
+                                $('#error-pop-up-modal').modal('show');
                             }
                         });
+                        $('#btn-save').html('Save');
                     }
                 });
             });
@@ -278,31 +293,34 @@
                 },
 
                 submitHandler: function (form) {
-                    $('#loader-modal').modal('show');
                     $('#btn-save').html('Sending..');
+                    $('#loader-modal').modal('show');
                     $.ajax({
                         data: $('#eventSecurityOfficerForm').serialize(),
-                        url: "{{ route('eventSecurityOfficersAdd') }}",
+                        url: "{{ route('eventSecurityOfficerAdd') }}",
                         type: "POST",
                         dataType: 'json',
                         success: function (data) {
                             $('#loader-modal').modal('hide');
                             $('#eventSecurityOfficerForm').trigger("reset");
                             $('#event-security-officer-modal').modal('hide');
-                            $('#btn-save').html('Save');
-                            var oTable = $('#laravel_datatable').dataTable();
-                            oTable.fnDraw(false);
+                            if(data['errCode']==1){
+                                var oTable = $('#laravel_datatable').dataTable();
+                                oTable.fnDraw(false);
+                            }
+                            else{
+                                $('#errorText').html(data['errMsg']);
+                                $('#error-pop-up-modal').modal('show');
+                            }
                         },
                         error: function (data) {
                             $('#loader-modal').modal('hide');
-                            console.log('Error:', data);
-                        	$('#event-security-officer-modal').modal('hide');
-                            $('#btn-save').html('Save');
-                            $('#errorTitle').html('Error: Duplicate security officers');
-                            $('#errorText').html('Cant insert duplicate security officer');
+                            $('#event-security-officer-modal-modal').modal('hide');
+                            $('#errorText').html(data['errMsg']);
                             $('#error-pop-up-modal').modal('show');
                         }
                     });
+                    $('#btn-save').html('Save');
                 }
             })
         }

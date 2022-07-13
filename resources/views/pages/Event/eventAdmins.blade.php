@@ -23,8 +23,8 @@
                                     <a class="url-nav" href="{{route('events')}}">
                                         <span>Events:</span>
                                     </a>
-                                    <a class="url-nav" href="{{route('EventController.show',[$event->id])}}">
-                                        {{$event->name}}
+                                    <a class="url-nav" href="{{route('EventController.show',[$event->event_id])}}">
+                                        {{$event->event_name}}
                                     </a> /
                                     Admins
                                 </h4>
@@ -44,12 +44,11 @@
                                     </i>
                                 </a>
                                 @role('super-admin')
-                                @if($event->status < 3)
+                                @if($event->can_edit == 1)
                                 <a href="javascript:void(0)" id="add-event-admin" class="add-hbtn" title="Add">
                                     <i>
                                         <img src="{{ asset('images/add.png') }}" alt="Add">
                                     </i>
-                                    <span class="dt-hbtn">Add</span>
                                 </a>
                                 @endif
                                 @endrole
@@ -84,7 +83,7 @@
                 <div class="modal-body">
                     <form id="eventAdminForm" name="eventAdminForm" class="form-horizontal">
                         <input style="visibility: hidden" type="text" name="event_id" id="event_id"
-                               value="{{$event->id}}">
+                               value="{{$event->event_id}}">
                         <div class="row">
                             <div class="col-md-12">
                                 <div class="form-group col">
@@ -92,9 +91,9 @@
                                     <div class="col-sm-12">
                                         <select id="admin_id" name="admin_id" required="">
                                             <option value="default">Please select Event Admin</option>
-                                            @foreach ($eventAdmins as $eventAdmin)
-                                                <option value="{{ $eventAdmin->user_id }}"
-                                                >{{ $eventAdmin->user_name }}</option>
+                                            @foreach ($event_admins as $event_admin)
+                                                <option value="{{ $event_admin->user_id }}"
+                                                >{{ $event_admin->user_name }}</option>
                                             @endforeach
                                         </select>
                                     </div>
@@ -112,6 +111,7 @@
             </div>
         </div>
     </div>
+
     <!-- delete confirm modal -->
     <div class="modal fade" id="delete-event-admin-confirm-modal" tabindex="-1" data-bs-backdrop="static"
          data-bs-keyboard="false" role="dialog" aria-hidden="true">
@@ -140,30 +140,8 @@
             </div>
         </div>
     </div>
-	<div class="modal fade" id="error-pop-up-modal" tabindex="-1" data-bs-backdrop="static"
-         data-bs-keyboard="false" role="dialog" aria-hidden="true">
-        <div class="modal-dialog" role="document">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title" id="errorTitle"></h5>
-                </div>
-                <div class="modal-body">
-                    <div>
-                        <label class="col-sm-12 confirm-text" id="errorText"></label>
-                    </div>
-                    <div class="row">
-                        <div class="col-sm-4"></div>
-                        <div class="col-sm-4">
-                            <button type="button" class="btn-cancel" data-dismiss="modal" id="btn-ok">OK
-                            </button>
-                        </div>
-                        <div class="col-sm-4">
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
+
+    <!-- loader modal -->
     <div class="modal" id="loader-modal" tabindex="-1" data-backdrop="static" data-keyboard="false"
          role="dialog" aria-hidden="true">
         <div class="modal-dialog" role="document" style="width: 250px">
@@ -177,6 +155,29 @@
                             <label class="loading">
                                 loading...
                             </label>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- error modal -->
+    <div class="modal fade" id="error-pop-up-modal" tabindex="-1" data-bs-backdrop="static"
+         data-bs-keyboard="false" role="dialog" aria-hidden="true">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="errorTitle">Error</h5>
+                </div>
+                <div class="modal-body">
+                    <div>
+                        <label class="col-sm-12 confirm-text" id="errorText"></label>
+                    </div>
+                    <div class="modal-footer">
+                        <div class="col-sm-12">
+                            <button type="submit" class="btn-cancel" data-dismiss="modal" value="create">OK
+                            </button>
                         </div>
                     </div>
                 </div>
@@ -207,11 +208,11 @@
                 processing: true,
                 serverSide: true,
                 ajax: {
-                    url: "{{ route('eventAdmins',[$event->id]) }}",
+                    url: "{{ route('eventAdmins',[$event->event_id]) }}",
                     type: 'GET',
                 },
                 columns: [
-                    {data: 'admin_id', name: 'admin_id', 'visible': false},
+                    {data: 'user_id', name: 'user_id', 'visible': false},
                     {data: 'name', name: 'name'},
                     {data: 'action', name: 'action', orderable: false},
                 ],
@@ -249,23 +250,36 @@
 
                 $(this).closest('.modal').one('hidden.bs.modal', function () {
                     if ($button[0].id === 'btn-yes') {
-                        var event_admin_id = $('#curr_event_admin_id').val();
-                        var url = "{{ route('eventAdminsRemove', ":id") }}";
-                        url = url.replace(':id', event_admin_id);
+                        $('#btn-save').html('Sending..');
                         $('#loader-modal').modal('show');
+                        var event_id = $('#event_id').val();
+                        var event_admin_id = $('#curr_event_admin_id').val();
+
+                        var url = "{{ route('eventAdminRemove', [":event_id",":event_admin_id"]) }}";
+                        url = url.replace(':event_id', event_id);
+                        url = url.replace(':event_admin_id', event_admin_id);
+
                         $.ajax({
                             type: "get",
                             url: url,
                             success: function (data) {
                                 $('#loader-modal').modal('hide');
-                                var oTable = $('#laravel_datatable').dataTable();
-                                oTable.fnDraw(false);
+                                if (data['errCode'] == '1') {
+                                    $('#loader-modal').modal('hide');
+                                    var oTable = $('#laravel_datatable').dataTable();
+                                    oTable.fnDraw(false);
+                                } else {
+                                    $('#errorText').html(data['errMsg']);
+                                    $('#error-pop-up-modal').modal('show');
+                                }
                             },
                             error: function (data) {
                                 $('#loader-modal').modal('hide');
-                                console.log('Error:', data);
+                                $('#errorText').html(data['errMsg']);
+                                $('#error-pop-up-modal').modal('show');
                             }
                         });
+                        $('#btn-save').html('Save');
                     }
                 });
             });
@@ -278,31 +292,34 @@
                 },
 
                 submitHandler: function (form) {
-                    $('#loader-modal').modal('show');
                     $('#btn-save').html('Sending..');
+                    $('#loader-modal').modal('show');
                     $.ajax({
                         data: $('#eventAdminForm').serialize(),
-                        url: "{{ route('eventAdminsAdd') }}",
+                        url: "{{ route('eventAdminAdd') }}",
                         type: "POST",
                         dataType: 'json',
                         success: function (data) {
                             $('#loader-modal').modal('hide');
                             $('#eventAdminForm').trigger("reset");
                             $('#event-admin-modal').modal('hide');
-                            $('#btn-save').html('Save');
-                            var oTable = $('#laravel_datatable').dataTable();
-                            oTable.fnDraw(false);
+                            if(data['errCode']==1){
+                                var oTable = $('#laravel_datatable').dataTable();
+                                oTable.fnDraw(false);
+                            }
+                            else{
+                                $('#errorText').html(data['errMsg']);
+                                $('#error-pop-up-modal').modal('show');
+                            }
                         },
                         error: function (data) {
-                            //console.log('Error:', data);
                             $('#loader-modal').modal('hide');
-                        	$('#event-admin-modal').modal('hide');
-                            $('#errorTitle').html('Error: Duplicate Event admins');
-                            $('#errorText').html('Cant insert duplicate aevent admin');
+                            $('#event-admin-modal').modal('hide');
+                            $('#errorText').html(data['errMsg']);
                             $('#error-pop-up-modal').modal('show');
-                            $('#btn-save').html('Save');
                         }
                     });
+                    $('#btn-save').html('Save');
                 }
             })
         }
