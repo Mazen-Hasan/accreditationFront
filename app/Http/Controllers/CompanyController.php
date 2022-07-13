@@ -75,25 +75,49 @@ class CompanyController extends Controller
 
     public function store(Request $request)
     {
-        $body = [
-            "name"=> $request->company_name,
-            "address"=> $request->address,
-            "telephone"=> $request->telephone,
-            "website"=> $request->website,
-            "country_id"=> $request->country,
-            "city_id"=> $request->city,
-            "category_id"=> $request->category,
-            "status"=> $request->company_status,
-            "focal_point_id" => $request->focal_point,
-            "event_id" => $request->event_id,
-            "size"=> $request->size,
-            "need_management"=> $request->need_management
-        ];
-        $result = CallAPI::postAPI('company/create',$body);
-        $errCode = $result['errCode'];
-        $errMsg = $result['errMsg'];
-        $data = $result['data'];
-        $data = json_decode(json_encode($data));
+        $companyId = $request->company_Id;
+        if($companyId == null){
+            $body = [
+                "name"=> $request->company_name,
+                "address"=> $request->address,
+                "telephone"=> $request->telephone,
+                "website"=> $request->website,
+                "country_id"=> $request->country,
+                "city_id"=> $request->city,
+                "category_id"=> $request->category,
+                "status"=> $request->company_status,
+                "focal_point_id" => $request->focal_point,
+                "event_id" => $request->event_id,
+                "size"=> $request->size,
+                "need_management"=> $request->need_management
+            ];
+            $result = CallAPI::postAPI('company/create',$body);
+            $errCode = $result['errCode'];
+            $errMsg = $result['errMsg'];
+            $data = $result['data'];
+            $data = json_decode(json_encode($data));
+        }else{
+            $body = [
+                "company_id" => $companyId,
+                "name"=> $request->company_name,
+                "address"=> $request->address,
+                "telephone"=> $request->telephone,
+                "website"=> $request->website,
+                "country_id"=> $request->country,
+                "city_id"=> $request->city,
+                "category_id"=> $request->category,
+                "status"=> $request->company_status,
+                "focal_point_id" => $request->focal_point,
+                "event_id" => $request->event_id,
+                "size"=> $request->size,
+                "need_management"=> $request->need_management
+            ];
+            $result = CallAPI::postAPI('company/edit',$body);
+            $errCode = $result['errCode'];
+            $errMsg = $result['errMsg'];
+            $data = $result['data'];
+            $data = json_decode(json_encode($data)); 
+        }
         // $companyId = $request->company_Id;
         // $where = array('id' => $request->focal_point);
         // $focal_point = FocalPoint::where($where)->first();
@@ -149,96 +173,173 @@ class CompanyController extends Controller
         //     ]); 
         // }
 
-        return Response::json($data->data);
+        return Response::json($data);
     }
 
     public function edit($id, $eventid)
     {
-        $where = array('id' => $eventid);
-        $event = Event::where($where)->first();
-        $companies = DB::select('select * from companies_view where id = ? and event_id = ?', [$id,$eventid]);
-        foreach($companies as $company){
-            $post = $company;
-        }
-        $eventcompanies = EventCompany::where(['company_id'=>$post->id,'event_id'=>$eventid])->first();
-        $where = array('id' => $eventcompanies->focal_point_id);
-        //$where = array('status' => 1);
-        $contacts = FocalPoint::where($where)->get()->all();
+        $body = [
+            'event_id' => $eventid,
+            'company_id' => $id
+        ];
+        $result = CallAPI::postAPI('company/getByID',$body);
+        $errCode = $result['errCode'];
+        $errMsg = $result['errMsg'];
+        $data = $result['data'];
+        $data = json_decode(json_encode($data));
+        $post = $data->data[0];
+        //return Response::json($data->data[0]);
+
+        $body = [
+            'focal_point_id' => $post->focal_point_id
+        ];
+        $result = CallAPI::postAPI('focalPoint/getByID',$body);
+        $errCode = $result['errCode'];
+        $errMsg = $result['errMsg'];
+        $data = $result['data'];
+        $data = json_decode(json_encode($data));
+        $focalPoints = $data->data;
+
         $focalPointsOption = array();
-        foreach ($contacts as $contact) {
-            $focalPointSelectOption = new SelectOption($contact->id, $contact->name . ' ' . $contact->last_name);
+        foreach ($focalPoints as $focalPoint) {
+            $focalPointSelectOption = new SelectOption($focalPoint->id, $focalPoint->name . ' ' . $focalPoint->last_name);
             $focalPointsOption[] = $focalPointSelectOption;
         }
 
+        $body = [];
+        $result = CallAPI::postAPI('company/getList',$body);
+        $errCode = $result['errCode'];
+        $errMsg = $result['errMsg'];
+        $data = $result['data'];
+        $data = json_decode(json_encode($data));
+
         $countrysSelectOptions = array();
-//         $countries = Country::get()->all();
 
-//         foreach ($countries as $country) {
-//             $countrySelectOption = new SelectOption($country->id, $country->name);
-//             $countrysSelectOptions[] = $countrySelectOption;
-//         }
-    	$countries = DB::select('select DISTINCT(ccc.country_id), c.country_name from country_cities_view ccc inner join country_cities_view c on ccc.country_id = c.country_id');
-        foreach ($countries as $country) {
-            $countrySelectOption = new SelectOption($country->country_id, $country->country_name);
-            $countrysSelectOptions[] = $countrySelectOption;
-        }
+        $countrysSelectOptions = $data->data->countries;
 
+        $categorysSelectOptions = array();
+
+        $categorysSelectOptions = $data->data->companyCategories;
+
+        $companyStatuss = $data->data->companyStatus;
+
+        $accreditationManagement1 = new SelectOption(0, 'Managed By Event Admin');
+        $accreditationManagement2 = new SelectOption(1, 'Managed By Company Admin');
+        $accreditationManagements = [$accreditationManagement1,$accreditationManagement2];
+
+        $accreditationCategorysSelectOptions = array();
+
+        //$citysSelectOptions = array();
+
+        $body = [
+            'country_id' => $post->country_id
+        ];
+        $result = CallAPI::postAPI('company/city/getAll',$body);
+        $errCode = $result['errCode'];
+        $errMsg = $result['errMsg'];
+        $data = $result['data'];
+        $data = json_decode(json_encode($data));
+        //$cities = DB::select('select * from cities c where c.country_id = ? ',[$countrytId]);
+        $cities = $data->data;
+        $subcount = 0;
         $citysSelectOptions = array();
-        //$cities = City::get()->all();
-		$cities = City::where(['country_id'=>$post->country_id])->get()->all();
         foreach ($cities as $city) {
             $citySelectOption = new SelectOption($city->id, $city->name);
             $citysSelectOptions[] = $citySelectOption;
         }
 
-        $where = array('status' => 1);
-        $categorysSelectOptions = array();
-        $categories = CompanyCategory::where($where)->get()->all();
 
-        foreach ($categories as $category) {
-            $categorySelectOption = new SelectOption($category->id, $category->name);
-            $categorysSelectOptions[] = $categorySelectOption;
-        }
+        //event Name needed
 
-        $where = array('status' => 1);
-        $accreditationCategorysSelectOptions = array();
-        $accreditationCategories = AccreditationCategory::where($where)->get()->all();
+//         $where = array('id' => $eventid);
+//         $event = Event::where($where)->first();
+//         $companies = DB::select('select * from companies_view where id = ? and event_id = ?', [$id,$eventid]);
+//         foreach($companies as $company){
+//             $post = $company;
+//         }
 
-        foreach ($accreditationCategories as $accreditationCategory) {
-            $accreditationCategorysSelectOption = new SelectOption($accreditationCategory->id, $accreditationCategory->name);
-            $accreditationCategorysSelectOptions[] = $accreditationCategorysSelectOption;
-        }
+        
+//         $eventcompanies = EventCompany::where(['company_id'=>$post->id,'event_id'=>$eventid])->first();
+//         $where = array('id' => $eventcompanies->focal_point_id);
+//         //$where = array('status' => 1);
+//         $contacts = FocalPoint::where($where)->get()->all();
+//         $focalPointsOption = array();
+//         foreach ($contacts as $contact) {
+//             $focalPointSelectOption = new SelectOption($contact->id, $contact->name . ' ' . $contact->last_name);
+//             $focalPointsOption[] = $focalPointSelectOption;
+//         }
 
-        $companyStatus1 = new SelectOption(1, 'Active');
-        $companyStatus2 = new SelectOption(0, 'InActive');
-        $companyStatuss = [$companyStatus1, $companyStatus2];
+//         $countrysSelectOptions = array();
+// //         $countries = Country::get()->all();
 
-        $accreditationManagement1 = new SelectOption(0, 'Managed By Event Admin');
-        $accreditationManagement2 = new SelectOption(1, 'Managed By Company Admin');
-        $accreditationManagements = [$accreditationManagement1,$accreditationManagement2];
+// //         foreach ($countries as $country) {
+// //             $countrySelectOption = new SelectOption($country->id, $country->name);
+// //             $countrysSelectOptions[] = $countrySelectOption;
+// //         }
+//     	$countries = DB::select('select DISTINCT(ccc.country_id), c.country_name from country_cities_view ccc inner join country_cities_view c on ccc.country_id = c.country_id');
+//         foreach ($countries as $country) {
+//             $countrySelectOption = new SelectOption($country->country_id, $country->country_name);
+//             $countrysSelectOptions[] = $countrySelectOption;
+//         }
+
+//         $citysSelectOptions = array();
+//         //$cities = City::get()->all();
+// 		$cities = City::where(['country_id'=>$post->country_id])->get()->all();
+//         foreach ($cities as $city) {
+//             $citySelectOption = new SelectOption($city->id, $city->name);
+//             $citysSelectOptions[] = $citySelectOption;
+//         }
+
+//         $where = array('status' => 1);
+//         $categorysSelectOptions = array();
+//         $categories = CompanyCategory::where($where)->get()->all();
+
+//         foreach ($categories as $category) {
+//             $categorySelectOption = new SelectOption($category->id, $category->name);
+//             $categorysSelectOptions[] = $categorySelectOption;
+//         }
+
+//         $where = array('status' => 1);
+//         $accreditationCategorysSelectOptions = array();
+//         $accreditationCategories = AccreditationCategory::where($where)->get()->all();
+
+//         foreach ($accreditationCategories as $accreditationCategory) {
+//             $accreditationCategorysSelectOption = new SelectOption($accreditationCategory->id, $accreditationCategory->name);
+//             $accreditationCategorysSelectOptions[] = $accreditationCategorysSelectOption;
+//         }
+
+//         $companyStatus1 = new SelectOption(1, 'Active');
+//         $companyStatus2 = new SelectOption(0, 'InActive');
+//         $companyStatuss = [$companyStatus1, $companyStatus2];
+
+//         $accreditationManagement1 = new SelectOption(0, 'Managed By Event Admin');
+//         $accreditationManagement2 = new SelectOption(1, 'Managed By Company Admin');
+//         $accreditationManagements = [$accreditationManagement1,$accreditationManagement2];
     
-        $allwoedSize = $event->size;
+
+
+//         if (request()->ajax()) {
+//             $companyAccreditationCategories = DB::select('select * from company_accreditaion_categories_view where company_id = ?', [$id]);
+//             return datatables()->of($companyAccreditationCategories)
+//                 ->addColumn('action', function ($data) {
+//                     $button = '<a href="javascript:void(0);" data-toggle="tooltip"  id="edit-company-accreditation" data-id="' . $data->id . '" data-original-title="Edit" title="Edit Size"><i class="fas fa-chart-pie"></i></a>';
+//                     $button .= '&nbsp;&nbsp;';
+//                     $button .= '<a href="javascript:void(0);" id="delete-company-accreditation" data-toggle="tooltip" data-original-title="Delete" data-id="' . $data->id . '" title="Delete"><i class="far fa-trash-alt"></i></a>';
+//                     return $button;
+//                 })
+//                 ->rawColumns(['action'])
+//                 ->make(true);
+//         }
+
+        $allwoedSize = 1000;
         $allwoedSize = $allwoedSize + $post->size;
         $eventcompaniess = EventCompany::where(['event_id'=> $eventid,'parent_id'=> null])->get()->all();
         foreach($eventcompaniess as $eventcompnays){
             $allwoedSize = $allwoedSize - $eventcompnays->size; 
         }
 
-        if (request()->ajax()) {
-            $companyAccreditationCategories = DB::select('select * from company_accreditaion_categories_view where company_id = ?', [$id]);
-            return datatables()->of($companyAccreditationCategories)
-                ->addColumn('action', function ($data) {
-                    $button = '<a href="javascript:void(0);" data-toggle="tooltip"  id="edit-company-accreditation" data-id="' . $data->id . '" data-original-title="Edit" title="Edit Size"><i class="fas fa-chart-pie"></i></a>';
-                    $button .= '&nbsp;&nbsp;';
-                    $button .= '<a href="javascript:void(0);" id="delete-company-accreditation" data-toggle="tooltip" data-original-title="Delete" data-id="' . $data->id . '" title="Delete"><i class="far fa-trash-alt"></i></a>';
-                    return $button;
-                })
-                ->rawColumns(['action'])
-                ->make(true);
-        }
-
         return view('pages.Company.company-edit')->with('company', $post)->with('countrys', $countrysSelectOptions)->with('citys', $citysSelectOptions)->with('focalPoints', $focalPointsOption)
-            ->with('categorys', $categorysSelectOptions)->with('accreditationCategorys', $accreditationCategorysSelectOptions)->with('eventid', $eventid)->with('event_name', $event->name)->with('company_name', $post->name)->with('statuss', $companyStatuss)->with('allowedSize',$allwoedSize)->with('accreditationManagements',$accreditationManagements);
+            ->with('categorys', $categorysSelectOptions)->with('accreditationCategorys', $accreditationCategorysSelectOptions)->with('eventid', $eventid)->with('event_name', '$event->name')->with('company_name', $post->name)->with('statuss', $companyStatuss)->with('allowedSize',$allwoedSize)->with('accreditationManagements',$accreditationManagements);
     }
 
 

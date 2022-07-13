@@ -383,7 +383,7 @@
             </div>
         </div>
     </div>
-	<div class="modal fade" id="loader-modal" tabindex="-1" data-backdrop="static" data-keyboard="false"
+	<div class="modal" id="loader-modal" tabindex="-1" data-backdrop="static" data-keyboard="false"
          role="dialog" aria-hidden="true">
         <div class="modal-dialog" role="document" style="width: 250px">
             <div class="modal-content">
@@ -459,18 +459,19 @@
             $('#loader-modal').modal('show');
             var url = "{{ route('getCities', ":id") }}";
             url = url.replace(':id', this.value);
-
             $.ajax({
                 type: "get",
                 // url: "fullFillmentController/getCompanies/" + this.value,
                 url: url,
                 success: function (data) {
+                    //alert(data);
                     $('#loader-modal').modal('hide');
                     var citySelectOptions = data;
                     $('#container').html('');
                     var html = '<select id="city" name="city" required="">';
                     var count = 0;
                     while (count < citySelectOptions.length) {
+                        //alert(citySelectOptions[count].key);
                         if (count == 0) {
                             html = html + "<option selected='selected' value=" + citySelectOptions[count].key + ">" + citySelectOptions[count].value + "</option>";
                         } else {
@@ -482,6 +483,7 @@
                     $('#container').append(html);
                 },
                 error: function (data) {
+                    //alert(data);
                     $('#loader-modal').modal('hide');
                     console.log('Error:', data);
                 }
