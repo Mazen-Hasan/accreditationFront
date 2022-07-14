@@ -221,6 +221,7 @@ Route::group(['middleware' => 'role:super-admin'], function () {
     Route::get('eventsData/{all}/{values}', 'App\Http\Controllers\EventController@getData')->name('eventsData');
 
     Route::get('/events', [App\Http\Controllers\EventController::class, 'index'])->name('events');
+//    Route::post('/event-add', [App\Http\Controllers\EventController::class, 'add'])->name('eventAdd');
     Route::get('/eventsShowAll/{status}', [App\Http\Controllers\EventController::class, 'showAll'])->name('eventsShowall');
 
     //Event admins
@@ -245,7 +246,8 @@ Route::group(['middleware' => 'role:super-admin'], function () {
     Route::post('/event-accreditation-categories-add', [App\Http\Controllers\EventController::class, 'eventAccreditationCategoryAdd'])->name('eventAccreditationCategoryAdd');
 
 
-    Route::get('/event-add', [App\Http\Controllers\EventController::class, 'eventAdd'])->name('eventAdd');
+    Route::get('/event-create', [App\Http\Controllers\EventController::class, 'eventCreate'])->name('eventCreate');
+    Route::post('/event-save', [App\Http\Controllers\EventController::class, 'eventSave'])->name('eventSave');
     Route::get('/event-edit/{id}', [App\Http\Controllers\EventController::class, 'edit'])->name('eventEdit');
     Route::get('/titles', [App\Http\Controllers\TitleController::class, 'index'])->name('titles');
     Route::get('/companyCategories', [App\Http\Controllers\CompanyCategoryController::class, 'index'])->name('companyCategories');

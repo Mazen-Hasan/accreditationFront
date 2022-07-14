@@ -31,7 +31,7 @@
                                 </a>
                                 <span class="dt-hbtn"></span>
                                 @role('super-admin')
-                                <a href="{{route('eventAdd')}}" id="add-new-post" class="add-hbtn" title="Add">
+                                <a href="{{route('eventCreate')}}" id="add-new-post" class="add-hbtn" title="Add">
                                     <i>
                                         <img src="{{ asset('images/add.png') }}" alt="Add">
                                     </i>

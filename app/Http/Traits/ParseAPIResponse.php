@@ -25,7 +25,7 @@ trait ParseAPIResponse
             }
             else
             {
-                if(empty(!$data['data'])){
+                if(!empty($data['data'])){
                     $retResult['data'] = $data['data'][0];
                 }
             }

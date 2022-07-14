@@ -262,7 +262,6 @@
                             success: function (data) {
                                 $('#loader-modal').modal('hide');
                                 if (data['errCode'] == '1') {
-                                    $('#loader-modal').modal('hide');
                                     var oTable = $('#laravel_datatable').dataTable();
                                     oTable.fnDraw(false);
                                 } else {

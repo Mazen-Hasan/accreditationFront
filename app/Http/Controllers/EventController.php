@@ -648,67 +648,76 @@ class EventController extends Controller
         return Response::json($post);
     }
 
-    public function eventAdd()
+    public function eventCreate()
     {
-        $sql = 'select CONCAT(COALESCE(c.name,"")," ",COALESCE(c.middle_name,"")," ",COALESCE(c.last_name,"")) "name" , c.id "id" from contacts c inner join contact_titles ct on c.id = ct.contact_id where ct.title_id = (select id from titles where title_label = "Organizer")';
-        $query = $sql;
-        $contacts = DB::select($query);
-        $organizersSelectOption = array();
-        foreach ($contacts as $contact) {
-            $organizerSelectOption = new SelectOption($contact->id, $contact->name);
-            $organizersSelectOption[] = $organizerSelectOption;
+
+        $url = 'event/getList';
+
+        $body = [
+        ];
+
+        $result = CallAPI::postAPI($url, $body);
+
+        $result = json_decode(json_encode($result["data"]));
+        $result = $result->data;
+
+        $organizers = $result->eventOrganizer;
+        $event_admins = $result->eventAdmin;
+        $security_officers = $result->securityOfficer;
+        $approval_options = $result->approvalOption;
+        $event_types = $result->eventType;
+        $event_status = $result->eventStatus;
+        $registration_forms = $result->registrationForm;
+        $security_categories = $result->securityCategory;
+
+        return view('pages.Event.event-add')->with('organizers', $organizers)->with('event_admins', $event_admins)
+            ->with('security_officers', $security_officers)->with('approval_options', $approval_options)->with('event_types', $event_types)
+            ->with('event_status', $event_status)->with('registration_forms', $registration_forms)->with('security_categories', $security_categories);
+    }
+
+    public function eventSave(Request $request)
+    {
+        $event_admins = "";
+        foreach ($request->event_admins as $event_admin) {
+            $event_admins .= $event_admin . ",";
         }
+        $event_admins = rtrim($event_admins, ", ");
 
-        $securityCategories = SecurityCategory::get()->where('status', '=', '1');
-        $securityCategoriesSelectOption = array();
-        foreach ($securityCategories as $securityCategory) {
-            $securityCategorieSelectOption = new SelectOption($securityCategory->id, $securityCategory->name);
-            $securityCategoriesSelectOption[] = $securityCategorieSelectOption;
+        $security_officers = "";
+        foreach ($request->security_officers as $security_officer) {
+            $security_officers .= $security_officer . ",";
         }
+        $security_officers = rtrim($security_officers, ", ");
 
-        $eventTypes = EventType::get()->where('status', '=', '1');
-        $eventTypesSelectOption = array();
-        foreach ($eventTypes as $eventType) {
-            $eventTypeSelectOption = new SelectOption($eventType->id, $eventType->name);
-            $eventTypesSelectOption[] = $eventTypeSelectOption;
+        $security_categories = "";
+        foreach ($request->security_categories as $security_category) {
+            $security_categories .= $security_category . ",";
         }
+        $security_categories = rtrim($security_categories, ", ");
 
-        $sql = 'SELECT u.id, u.name FROM users u join users_roles ur on u.id = ur.user_id join roles r on ur.role_id = r.id where r.slug = "event-admin"';
-        $eventAdminUsers = DB::select($sql);
-        $eventAdmins = array();
-        foreach ($eventAdminUsers as $eventAdminUser) {
-            $eventAdminSelectOption = new SelectOption($eventAdminUser->id, $eventAdminUser->name);
-            $eventAdmins[] = $eventAdminSelectOption;
-        }
 
-        $sql = 'SELECT u.id, u.name FROM users u join users_roles ur on u.id = ur.user_id join roles r on ur.role_id = r.id where r.slug = "security-officer"';
-        $securityOfficerUsers = DB::select($sql);
+        $url = 'event/create';
 
-        $securityOfficers = array();
-        foreach ($securityOfficerUsers as $securityOfficerUser) {
-            $securityOfficerSelectOption = new SelectOption($securityOfficerUser->id, $securityOfficerUser->name);
-            $securityOfficers[] = $securityOfficerSelectOption;
-        }
+        $body = [
+            "event_name" => $request->event_name,
+            "size" =>$request->size,
+            "start_date" => $request->event_start_date,
+            "end_date" => $request->event_end_date,
+            "acc_start_date" => $request->accreditation_start_date,
+            "acc_end_date" => $request->accreditation_end_date,
+            "organizer" => $request->organizer,
+            "owner" => $request->owner,
+            "event_type" => $request->event_type,
+            "registration_form" => $request->event_form,
+            "location" => $request->location,
+            "status" => $request->status,
+            "event_admin" => $event_admins,
+            "security_officer" => $security_officers,
+            "security_category" => $security_categories,
+            "approval_option" => $request->approval_option
+        ];
 
-        $approvalOption1 = new SelectOption(1, 'Event Admin Approval');
-        $approvalOption2 = new SelectOption(2, 'Security Officer Approval');
-        $approvalOption3 = new SelectOption(3, 'Both');
-        $approvalOptions = [$approvalOption1, $approvalOption2, $approvalOption3];
-
-        $eventStatus1 = new SelectOption(1, 'Active');
-        $eventStatus2 = new SelectOption(2, 'InActive');
-        $eventStatuss = [$eventStatus1, $eventStatus2];
-
-        $templates = DB::select('select * from available_templates_view');
-        $templatesSelectOption = array();
-        foreach ($templates as $template) {
-            $templateSelectOption = new SelectOption($template->id, $template->name);
-            $templatesSelectOption[] = $templateSelectOption;
-        }
-
-        return view('pages.Event.event-add')->with('organizers', $organizersSelectOption)->with('eventAdmins', $eventAdmins)
-            ->with('securityOfficers', $securityOfficers)->with('approvalOptions', $approvalOptions)->with('eventTypes', $eventTypesSelectOption)
-            ->with('eventStatuss', $eventStatuss)->with('eventForms', $templatesSelectOption)->with('securityCategories', $securityCategoriesSelectOption);
+        return Response::json(ParseAPIResponse:: parseResult(CallAPI::postAPI($url, $body)));
     }
 
     public function edit($id)
@@ -841,24 +850,8 @@ class EventController extends Controller
             ->with('securityCategories', $securityCategoriesSelectOption);
     }
 
-    public function remove($event_security_category_id)
-    {
-        $where = array('id' => $event_security_category_id);
-        $post = EventSecurityCategory::where($where)->delete();
-        return Response::json($post);
-    }
-
-    public function destroy($id)
-    {
-        $post = Event::where('id', $id)->delete();
-
-        return Response::json($post);
-    }
-
     public function eventAccreditationCategories($event_id)
     {
-        $where = array('id' => $event_id);
-        $event = Event::where($where)->first();
         if (request()->ajax()) {
             $body = [
                 'event_id' => $event_id

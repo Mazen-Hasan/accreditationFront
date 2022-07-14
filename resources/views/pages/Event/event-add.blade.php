@@ -18,10 +18,8 @@
                                 <span>Events:</span>
                             </a>
                             / Add New Event</h4>
-                        <form class="form-sample" id="postForm" name="postForm">
+                        <form class="form-sample" id="event-new-form" name="eventNewForm">
                             <input type="hidden" name="creation_date" id="creation_date" value="">
-                            <input type="hidden" name="creator" id="creator" value="">
-                            <input type="hidden" name="post_id" id="post_id">
                             <input type="hidden" name="current_date" id="current_date" value="">
                             <br>
                             <div class="row">
@@ -29,7 +27,7 @@
                                     <div class="form-group col">
                                         <label>Event Name</label>
                                         <div class="col-sm-12">
-                                            <input type="text" id="name" minlength="1" maxlength="100" name="name"
+                                            <input type="text" id="event_name" minlength="1" maxlength="100" name="event_name"
                                                    value="" required=""
                                                    placeholder="enter event name"/>
                                         </div>
@@ -95,16 +93,6 @@
                                             <input type="text" id="owner" minlength="1" maxlength="100"
                                                    name="owner" value=""
                                                    placeholder="enter owner" required=""/>
-{{--                                            <select id="owner" name="owner" required="">--}}
-{{--                                                <option value="default">Please select Event Owner</option>--}}
-{{--                                                @foreach ($owners as $owner)--}}
-{{--                                                    <option value="{{ $owner->key }}"--}}
-{{--                                                            @if ($owner->key == -1)--}}
-{{--                                                            selected="selected"--}}
-{{--                                                        @endif--}}
-{{--                                                    >{{ $owner->value }}</option>--}}
-{{--                                                @endforeach--}}
-{{--                                            </select>--}}
                                         </div>
                                     </div>
                                 </div>
@@ -115,11 +103,8 @@
                                             <select id="organizer" name="organizer" required="">
                                                 <option value="default">Please select Event Organizer</option>
                                                 @foreach ($organizers as $organizer)
-                                                    <option value="{{ $organizer->key }}"
-                                                            @if ($organizer->key == -1)
-                                                            selected="selected"
-                                                        @endif
-                                                    >{{ $organizer->value }}</option>
+                                                    <option value="{{ $organizer->id }}"
+                                                    >{{ $organizer->name}}</option>
                                                 @endforeach
                                             </select>
                                         </div>
@@ -134,12 +119,9 @@
                                         <div class="col-sm-12">
                                             <select id="event_type" name="event_type" required="">
                                                 <option value="default">Please select Event Type</option>
-                                                @foreach ($eventTypes as $eventType)
-                                                    <option value="{{ $eventType->key }}"
-                                                            @if ($eventType->key == -1)
-                                                            selected="selected"
-                                                        @endif
-                                                    >{{ $eventType->value }}</option>
+                                                @foreach ($event_types as $event_type)
+                                                    <option value="{{ $event_type->id}}"
+                                                    >{{ $event_type->name}}</option>
                                                 @endforeach
                                             </select>
                                         </div>
@@ -152,12 +134,9 @@
                                             <select id="event_form" name="event_form" required="">
                                                 <option value="default">Please select Registration Form Template
                                                 </option>
-                                                @foreach ($eventForms as $eventForm)
-                                                    <option value="{{ $eventForm->key }}"
-                                                            @if ($eventForm->key == -1)
-                                                            selected="selected"
-                                                        @endif
-                                                    >{{ $eventForm->value }}</option>
+                                                @foreach ($registration_forms as $registration_form)
+                                                    <option value="{{ $registration_form->id}}"
+                                                    >{{ $registration_form->name}}</option>
                                                 @endforeach
                                             </select>
                                         </div>
@@ -182,12 +161,9 @@
                                         <div class="col-sm-12">
                                             <select id="status" name="status" required="">
                                                 <option value="default">Please select Status</option>
-                                                @foreach ($eventStatuss as $eventStatus)
-                                                    <option value="{{ $eventStatus->key }}"
-                                                            @if ($eventStatus->key == -1)
-                                                            selected="selected"
-                                                        @endif
-                                                    >{{ $eventStatus->value }}</option>
+                                                @foreach ($event_status as $event_status)
+                                                    <option value="{{ $event_status->id}}"
+                                                    >{{ $event_status->name}}</option>
                                                 @endforeach
                                             </select>
                                         </div>
@@ -202,12 +178,9 @@
                                         <div class="col-sm-12">
                                             <select id="event_admins" name="event_admins[]" required="" multiple>
                                                 <option value="default">Please select Event Admin</option>
-                                                @foreach ($eventAdmins as $eventAdmin)
-                                                    <option value="{{ $eventAdmin->key }}"
-                                                            @if ($eventAdmin->key == -1)
-                                                            selected="selected"
-                                                        @endif
-                                                    >{{ $eventAdmin->value }}</option>
+                                                @foreach ($event_admins as $event_admin)
+                                                    <option value="{{ $event_admin->id}}"
+                                                    >{{ $event_admin->name}}</option>
                                                 @endforeach
                                             </select>
                                         </div>
@@ -220,12 +193,9 @@
                                             <select multiple id="security_categories" name="security_categories[]"
                                                     required="">
                                                 <option value="default">Please select Security Group</option>
-                                                @foreach ($securityCategories as $securityCategory)
-                                                    <option value="{{ $securityCategory->key }}"
-                                                            @if ($securityCategory->key == -1)
-                                                            selected="selected"
-                                                        @endif
-                                                    >{{ $securityCategory->value }}</option>
+                                                @foreach ($security_categories as $security_category)
+                                                    <option value="{{ $security_category->id}}"
+                                                    >{{ $security_category->name}}</option>
                                                 @endforeach
                                             </select>
                                         </div>
@@ -240,12 +210,9 @@
                                         <div class="col-sm-12">
                                             <select id="approval_option" name="approval_option" required="">
                                                 <option value="default">Please select Security Option</option>
-                                                @foreach ($approvalOptions as $approvalOption)
-                                                    <option value="{{ $approvalOption->key }}"
-                                                            @if ($approvalOption->key == -1)
-                                                            selected="selected"
-                                                        @endif
-                                                    >{{ $approvalOption->value }}</option>
+                                                @foreach ($approval_options as $approval_option)
+                                                    <option value="{{ $approval_option->id}}"
+                                                    >{{ $approval_option->name}}</option>
                                                 @endforeach
                                             </select>
                                         </div>
@@ -258,12 +225,9 @@
                                             <select id="security_officers" name="security_officers[]" required=""
                                                     multiple>
                                                 <option value="default">Please select Security Officer</option>
-                                                @foreach ($securityOfficers as $securityOfficer)
-                                                    <option value="{{ $securityOfficer->key }}"
-                                                            @if ($securityOfficer->key == -1)
-                                                            selected="selected"
-                                                        @endif
-                                                    >{{ $securityOfficer->value }}</option>
+                                                @foreach ($security_officers as $security_officer)
+                                                    <option value="{{ $security_officer->id}}"
+                                                    >{{ $security_officer->name}}</option>
                                                 @endforeach
                                             </select>
                                         </div>
@@ -307,6 +271,7 @@
         </div>
     </div>
 
+    <!-- loader modal -->
     <div class="modal" id="loader-modal" tabindex="-1" data-backdrop="static" data-keyboard="false"
          role="dialog" aria-hidden="true">
         <div class="modal-dialog" role="document" style="width: 250px">
@@ -326,10 +291,32 @@
             </div>
         </div>
     </div>
+
+    <!-- error modal -->
+    <div class="modal fade" id="error-pop-up-modal" tabindex="-1" data-bs-backdrop="static"
+         data-bs-keyboard="false" role="dialog" aria-hidden="true">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="errorTitle">Error</h5>
+                </div>
+                <div class="modal-body">
+                    <div>
+                        <label class="col-sm-12 confirm-text" id="errorText"></label>
+                    </div>
+                    <div class="modal-footer">
+                        <div class="col-sm-12">
+                            <button type="submit" class="btn-cancel" data-dismiss="modal" value="create">OK
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
 @endsection
 @section('script')
     <script>
-        // var event_admins = [];
         var t = 0;
         $(document).ready(function () {
 
@@ -345,12 +332,11 @@
             var output = d.getFullYear() + '/' +
                 (month < 10 ? '0' : '') + month + '/' +
                 (day < 10 ? '0' : '') + day;
-            //alert(output);
             $('#current_date').val(output);
             $('#add-new-post').click(function () {
                 $('#btn-save').val("create-post");
                 $('#post_id').val('');
-                $('#postForm').trigger("reset");
+                $('#event-new-form').trigger("reset");
                 $('#postCrudModal').html("Add New Post");
                 $('#ajax-crud-modal').modal('show');
             });
@@ -387,14 +373,13 @@
 
         });
 
-        if ($("#postForm").length > 0) {
-            $("#postForm").validate({
+        if ($("#event-new-form").length > 0) {
+            $("#event-new-form").validate({
                 rules: {
                     event_start_date: {greaterThanOrEqual: "#current_date"},
                     accreditation_start_date: {greaterThanOrEqual: "#current_date"},
                     event_end_date: {greaterThan: "#event_start_date"},
                     accreditation_start_date: {lessThan: "#event_end_date"},
-                    // accreditation_start_date: {greaterThan: "#event_start_date"},
                     accreditation_end_date: {greaterThan: "#accreditation_start_date"},
                     accreditation_end_date: {lessThan: "#event_end_date"},
                     security_officers: {valueNotEquals: "default"},
@@ -416,27 +401,31 @@
                 },
 
                 submitHandler: function (form) {
-                    $('#post_id').val('');
-                    $('#loader-modal').modal('show');
-                    $('#btn-save').prop('disabled', true);
                     $('#btn-save').html('Sending..');
+                    $('#loader-modal').modal('show');
+
                     $.ajax({
-                        data: $('#postForm').serialize(),
-                        url: "{{ route('EventController.store') }}",
+                        data: $('#event-new-form').serialize(),
+                        url: "{{ route('eventSave') }}",
                         type: "POST",
                         dataType: 'json',
                         success: function (data) {
-                            $('#postForm').trigger("reset");
+                            $('#event-new-form').trigger("reset");
                             $('#loader-modal').modal('hide');
-                            $('#btn-save').html('Done');
-                            window.location.href = "{{ route('events')}}";
+                            if (data['errCode'] == '1') {
+                                window.location.href = "{{ route('events')}}";
+                            } else {
+                                $('#errorText').html(data['errMsg']);
+                                $('#error-pop-up-modal').modal('show');
+                            }
+
                         },
                         error: function (data) {
                             $('#loader-modal').modal('hide');
-                            console.log('Error:', data);
-                            $('#btn-save').html('Saved');
+
                         }
                     });
+                    $('#btn-save').html('Save');
                 }
             })
         }
@@ -472,34 +461,5 @@
             function (value, element, params) {
                 return params !== value;
             }, " Please select a value");
-
-        // $("#event_admin_add").click(function () {
-        //     var event_admin_id = $("#event_admin_multi").val();
-        //     var event_admin_val = $("#event_admin_multi").find(":selected").text();
-        //
-        //     if(event_admin_id !== 'default'){
-        //         event_admins.push(event_admin_id);
-        //         var html = '';
-        //         html += '<div id="eventAdminRow">';
-        //         html += '<div class="input-group mb-3">';
-        //         html += '<input type="hidden" class="form-control m-input" value="' + event_admin_id + '">';
-        //         html += '<label class="form-control m-input">' + event_admin_val + '</label>';
-        //         html += '<div class="input-group-append">';
-        //         html += '<a href="javascript:void(0)" id="remove"><i class="fas fa-minus-circle"></i></a>';
-        //         html += '</div>';
-        //         html += '</div>';
-        //
-        //         $("#event_admin_list").append(html);
-        //
-        //         console.log(event_admins);
-        //     }
-        // });
-        //
-        // $(document).on('click', '#remove', function () {
-        //     $(this).closest('#eventAdminRow').remove();
-        //     console.log($(this));
-        //     // event_admins.remove($(this));
-        //     console.log(event_admins);
-        // });
     </script>
 @endsection
