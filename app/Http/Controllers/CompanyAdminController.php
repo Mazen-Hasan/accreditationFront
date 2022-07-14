@@ -25,13 +25,23 @@ use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Response;
 use Illuminate\Support\Facades\Schema;
+use App\Http\Traits\CallAPI;
 
 class CompanyAdminController extends Controller
 {
     public function index()
     {
+
+        $body = [];
+        $url = 'company/companyAdminEventsGetAll';
+        $result = CallAPI::postAPI($url, $body);
+        $errCode = $result['errCode'];
+        $errMsg = $result['errMsg'];
+        $data = $result['data'];
+        $data = json_decode(json_encode($data));
+        $events = $data->data;
         //$events = DB::select('select * from company_admins_view cc where cc.account_id = ? and cc.status = ? and cc.event_end_date >= CURRENT_DATE()', [Auth::user()->id, 3]);
-        $events = DB::select('select * from company_admins_view cc where cc.account_id = ? and cc.status = ? and cc.event_status < ?', [Auth::user()->id, 3,4]);
+        // $events = DB::select('select * from company_admins_view cc where cc.account_id = ? and cc.status = ? and cc.event_status < ?', [Auth::user()->id, 3,4]);
         $subCompany_nav = 1;
         return view('pages.CompanyAdmin.company-admin')->with('events', $events)->with('subCompany_nav', $subCompany_nav);
     }
@@ -258,75 +268,106 @@ class CompanyAdminController extends Controller
     }
 
     public function getPaticipantsData($companyId,$eventId,$values){
-        $eventcompanies = EventCompany::where(['event_id'=>$eventId,'parent_id'=>$companyId])->get()->all();
-        $companies = "'".$companyId."'";
-        if($eventcompanies != null){
-            foreach($eventcompanies as $eventcompnay){
-                $companies = $companies.",'".$eventcompnay->company_id."'";
-            }
-        }
-        $totalSize = DB::select('select t.* , c.* from `temp_' . $eventId . '`' . ' t inner join company_staff c on t.id = c.id where c.company_id in ('.$companies.')');
-        $size = 10;
-        $whereCondition = "";
+        $offset = 0;
         if($values != null){
             if(str_contains($values,",")){
                 $comands = explode(",",$values);
-                $skip = $size * $comands[0];
-                $c_size = sizeof($comands);
-                $i = 1;
-                while($i < sizeof($comands)){
-                    $token = $comands[$i];
-                    $i = $i + 1;
-                    $complexityType = $comands[$i];
-                    if($complexityType == "C"){
-                        $i = $i + 1;
-                        $condition1 = $comands[$i];
-                        $i = $i + 1;
-                        $condition1token = $comands[$i];
-                        $i = $i + 1;
-                        $operator = $comands[$i];
-                        $i = $i + 1;
-                        $condition2 = $comands[$i];
-                        $i = $i + 1;
-                        $condition2token = $comands[$i];
-                        $whereCondition =  $whereCondition." and ".TemplateController::getConditionPart($token,$condition1,$condition1token) . " ".$operator ." ". TemplateController::getConditionPart($token,$condition2,$condition2token);
-                    }else{
-                        $i = $i + 1;
-                        $condition1 = $comands[$i];
-                        $i = $i + 1;
-                        $condition1token = $comands[$i];
-                        $whereCondition = $whereCondition." and ".TemplateController::getConditionPart($token,$condition1,$condition1token);
-                    }
-                    $i = $i + 1;
-                }
-                $companies = "'".$companyId."'";
-                if($eventcompanies != null){
-                    foreach($eventcompanies as $eventcompnay){
-                        $companies = $companies.",'".$eventcompnay->company_id."'";
-                    }
-                }
-                $totalSize = DB::select('select t.* , c.* from `temp_' . $eventId . '` t inner join company_staff c on t.id = c.id where c.company_id in ('.$companies.')'. $whereCondition);
-                $participants = DB::select('select t.* , c.* from `temp_' . $eventId . '` t inner join company_staff c on t.id = c.id where c.company_id in ('.$companies.')'. $whereCondition." LIMIT ". $size. " OFFSET ". $skip);
-            }else{
-                $skip = $size * $values;
-                $eventcompanies = EventCompany::where(['event_id'=>$eventId,'parent_id'=>$companyId])->get()->all();
-                $companies = "'".$companyId."'";
-                if($eventcompanies != null){
-                    foreach($eventcompanies as $eventcompnay){
-                        $companies = $companies.",'".$eventcompnay->company_id."'";
-                    }
-                }
-                $participants = DB::select('select t.* , c.* from `temp_' . $eventId . '` t inner join company_staff c on t.id = c.id where c.company_id in ('.$companies.') LIMIT '. $size. " OFFSET ". $skip);
+                $offset = $comands[0];
             }
         }
+        $body = [
+            'eventID' => $eventId,
+            'companyID' => $companyId,
+            'offset' => $offset,
+            'size' => 10,
+            'filters' => $values
+        ];
+        $result = CallAPI::postAPI('company/participant/getAll',$body);
+
+        $errCode = $result['errCode'];
+        $errMsg = $result['errMsg'];
+        $data = $result['data'];
+        $data = json_decode(json_encode($data));
+        // var_dump($data);
+        // exit;
         return Response::json(array(
             'success' =>true,
             'code' => 1,
-            'size' => round(sizeof($totalSize)/2),
-            'templates' => $participants,
+            'size' => $data->gridcount,
+            'templates' => $data->data,
             'message' => 'hi'
         ));
-        //return Response::json($templates);
+
+
+        // $eventcompanies = EventCompany::where(['event_id'=>$eventId,'parent_id'=>$companyId])->get()->all();
+        // $companies = "'".$companyId."'";
+        // if($eventcompanies != null){
+        //     foreach($eventcompanies as $eventcompnay){
+        //         $companies = $companies.",'".$eventcompnay->company_id."'";
+        //     }
+        // }
+        // $totalSize = DB::select('select t.* , c.* from `temp_' . $eventId . '`' . ' t inner join company_staff c on t.id = c.id where c.company_id in ('.$companies.')');
+        // $size = 10;
+        // $whereCondition = "";
+        // if($values != null){
+        //     if(str_contains($values,",")){
+        //         $comands = explode(",",$values);
+        //         $skip = $size * $comands[0];
+        //         $c_size = sizeof($comands);
+        //         $i = 1;
+        //         while($i < sizeof($comands)){
+        //             $token = $comands[$i];
+        //             $i = $i + 1;
+        //             $complexityType = $comands[$i];
+        //             if($complexityType == "C"){
+        //                 $i = $i + 1;
+        //                 $condition1 = $comands[$i];
+        //                 $i = $i + 1;
+        //                 $condition1token = $comands[$i];
+        //                 $i = $i + 1;
+        //                 $operator = $comands[$i];
+        //                 $i = $i + 1;
+        //                 $condition2 = $comands[$i];
+        //                 $i = $i + 1;
+        //                 $condition2token = $comands[$i];
+        //                 $whereCondition =  $whereCondition." and ".TemplateController::getConditionPart($token,$condition1,$condition1token) . " ".$operator ." ". TemplateController::getConditionPart($token,$condition2,$condition2token);
+        //             }else{
+        //                 $i = $i + 1;
+        //                 $condition1 = $comands[$i];
+        //                 $i = $i + 1;
+        //                 $condition1token = $comands[$i];
+        //                 $whereCondition = $whereCondition." and ".TemplateController::getConditionPart($token,$condition1,$condition1token);
+        //             }
+        //             $i = $i + 1;
+        //         }
+        //         $companies = "'".$companyId."'";
+        //         if($eventcompanies != null){
+        //             foreach($eventcompanies as $eventcompnay){
+        //                 $companies = $companies.",'".$eventcompnay->company_id."'";
+        //             }
+        //         }
+        //         $totalSize = DB::select('select t.* , c.* from `temp_' . $eventId . '` t inner join company_staff c on t.id = c.id where c.company_id in ('.$companies.')'. $whereCondition);
+        //         $participants = DB::select('select t.* , c.* from `temp_' . $eventId . '` t inner join company_staff c on t.id = c.id where c.company_id in ('.$companies.')'. $whereCondition." LIMIT ". $size. " OFFSET ". $skip);
+        //     }else{
+        //         $skip = $size * $values;
+        //         $eventcompanies = EventCompany::where(['event_id'=>$eventId,'parent_id'=>$companyId])->get()->all();
+        //         $companies = "'".$companyId."'";
+        //         if($eventcompanies != null){
+        //             foreach($eventcompanies as $eventcompnay){
+        //                 $companies = $companies.",'".$eventcompnay->company_id."'";
+        //             }
+        //         }
+        //         $participants = DB::select('select t.* , c.* from `temp_' . $eventId . '` t inner join company_staff c on t.id = c.id where c.company_id in ('.$companies.') LIMIT '. $size. " OFFSET ". $skip);
+        //     }
+        // }
+        // return Response::json(array(
+        //     'success' =>true,
+        //     'code' => 1,
+        //     'size' => round(sizeof($totalSize)/2),
+        //     'templates' => $participants,
+        //     'message' => 'hi'
+        // ));
+        // //return Response::json($templates);
     }
 
 
@@ -561,53 +602,65 @@ class CompanyAdminController extends Controller
 
     public function sendRequest($staffId)
     {
-        $where = array('id' => $staffId);
-        $companyStaff = CompanyStaff::where($where)->first();
-        $companyId = $companyStaff->company_id;
-        $eventId = $companyStaff->event_id;
+        $body = [
+            'staff_id' => $staffId
+        ];
+        $result = CallAPI::postAPI('participant/sendRequest',$body);
+        $errCode = $result['errCode'];
+        $errMsg = $result['errMsg'];
+        $data = $result['data'];
+        $data = json_decode(json_encode($data));
+        return Response::json($data->data);
 
-        $eventWhere = array('id' => $eventId);
-        $event = Event::where($eventWhere)->first();
 
-        $companyWhere = array('id' => $companyId);
-        $company = Company::where($companyWhere)->first();
 
-        $approval = $event->approval_option;
+//         $where = array('id' => $staffId);
+//         $companyStaff = CompanyStaff::where($where)->first();
+//         $companyId = $companyStaff->company_id;
+//         $eventId = $companyStaff->event_id;
 
-        $event_admins = DB::select('select * from event_admins_view e where e.id=?',[$eventId]);
-        $event_security_officers = DB::select('select * from event_security_officers_view e where e.id=?',[$eventId]);
+//         $eventWhere = array('id' => $eventId);
+//         $event = Event::where($eventWhere)->first();
 
-        if ($approval == 2) {
-            foreach ($event_security_officers as $event_security_officer){
-//                NotificationController::sendAlertNotification($event_security_officer->security_officer_id, $staffId, $event->name . ': ' . $company->name . ': ' . 'Participant approval', '/security-officer-participant-details/' . $staffId);
-                // NotificationController::sendAlertNotification($event_security_officer->security_officer_id, $staffId, $event->name . ': ' . $company->name . ': ' . 'Participant approval', Route('securityParticipantDetails' , $staffId));
+//         $companyWhere = array('id' => $companyId);
+//         $company = Company::where($companyWhere)->first();
 
-            	$notification_type = Config::get('enums.notification_types.PAR');
-                NotificationController::sendNotification($notification_type, $event->name, $company->name, $event_security_officer->security_officer_id, $staffId,
-                    $event->name . ': ' . $company->name . ': ' . 'Participant approval',
-                    Route('securityParticipantDetails' , $staffId));
-            }
+//         $approval = $event->approval_option;
 
-//            $updateQuery = 'update company_staff set security_officer_id = ' . $event->security_officer . ' where id = ' . $staffId;
-//            DB::update($updateQuery);
-            DB::update('update company_staff set status = ? where id = ?', [1, $staffId]);
+//         $event_admins = DB::select('select * from event_admins_view e where e.id=?',[$eventId]);
+//         $event_security_officers = DB::select('select * from event_security_officers_view e where e.id=?',[$eventId]);
 
-        } else {
-            foreach ($event_admins as $event_admin){
-                NotificationController::sendAlertNotification($event_admin->event_admin, $staffId, $event->name . ': ' . $company->name . ': ' . 'Participant approval', Route('participantDetails', $staffId));
-            }
+//         if ($approval == 2) {
+//             foreach ($event_security_officers as $event_security_officer){
+// //                NotificationController::sendAlertNotification($event_security_officer->security_officer_id, $staffId, $event->name . ': ' . $company->name . ': ' . 'Participant approval', '/security-officer-participant-details/' . $staffId);
+//                 // NotificationController::sendAlertNotification($event_security_officer->security_officer_id, $staffId, $event->name . ': ' . $company->name . ': ' . 'Participant approval', Route('securityParticipantDetails' , $staffId));
 
-            if ($approval == 1) {
-//                NotificationController::sendAlertNotification($event->event_admin, $staffId, $event->name . ': ' . $company->name . ': ' . 'Participant approval', '/event-participant-details/' . $staffId);
-//                DB::update('update company_staff set event_admin_id = ? where id = ?', [$event->event_admin, $staffId]);
-                DB::update('update company_staff set status = ? where id = ?', [2, $staffId]);
-            } else {
-//                NotificationController::sendAlertNotification($event->event_admin, $staffId, $event->name . ': ' . $company->name . ': ' . 'Participant approval', '/event-participant-details/' . $staffId);
-//                DB::update('update company_staff set event_admin_id = ? where id = ?', [$event->event_admin, $staffId]);
-                DB::update('update company_staff set status = ? where id = ?', [2, $staffId]);
-            }
-        }
-        return Response::json($event);
+//             	$notification_type = Config::get('enums.notification_types.PAR');
+//                 NotificationController::sendNotification($notification_type, $event->name, $company->name, $event_security_officer->security_officer_id, $staffId,
+//                     $event->name . ': ' . $company->name . ': ' . 'Participant approval',
+//                     Route('securityParticipantDetails' , $staffId));
+//             }
+
+// //            $updateQuery = 'update company_staff set security_officer_id = ' . $event->security_officer . ' where id = ' . $staffId;
+// //            DB::update($updateQuery);
+//             DB::update('update company_staff set status = ? where id = ?', [1, $staffId]);
+
+//         } else {
+//             foreach ($event_admins as $event_admin){
+//                 NotificationController::sendAlertNotification($event_admin->event_admin, $staffId, $event->name . ': ' . $company->name . ': ' . 'Participant approval', Route('participantDetails', $staffId));
+//             }
+
+//             if ($approval == 1) {
+// //                NotificationController::sendAlertNotification($event->event_admin, $staffId, $event->name . ': ' . $company->name . ': ' . 'Participant approval', '/event-participant-details/' . $staffId);
+// //                DB::update('update company_staff set event_admin_id = ? where id = ?', [$event->event_admin, $staffId]);
+//                 DB::update('update company_staff set status = ? where id = ?', [2, $staffId]);
+//             } else {
+// //                NotificationController::sendAlertNotification($event->event_admin, $staffId, $event->name . ': ' . $company->name . ': ' . 'Participant approval', '/event-participant-details/' . $staffId);
+// //                DB::update('update company_staff set event_admin_id = ? where id = ?', [$event->event_admin, $staffId]);
+//                 DB::update('update company_staff set status = ? where id = ?', [2, $staffId]);
+//             }
+//         }
+//         return Response::json($event);
 
     }
 
@@ -642,55 +695,83 @@ class CompanyAdminController extends Controller
     }
 
     public function getsubCompaniesData($companyId, $eventId,$values){
-        $totalSize = DB::select('select * from companies_view where parent_id = ? and event_id = ?', [$companyId,$eventId]);
-        //$totalSize = Template::latest()->get();
-        $size = 10;
-        $whereCondition = "";
+        $offset = 0;
         if($values != null){
             if(str_contains($values,",")){
                 $comands = explode(",",$values);
-                $skip = $size * $comands[0];
-                $c_size = sizeof($comands);
-                $i = 1;
-                while($i < sizeof($comands)){
-                    $token = $comands[$i];
-                    $i = $i + 1;
-                    $complexityType = $comands[$i];
-                    if($complexityType == "C"){
-                        $i = $i + 1;
-                        $condition1 = $comands[$i];
-                        $i = $i + 1;
-                        $condition1token = $comands[$i];
-                        $i = $i + 1;
-                        $operator = $comands[$i];
-                        $i = $i + 1;
-                        $condition2 = $comands[$i];
-                        $i = $i + 1;
-                        $condition2token = $comands[$i];
-                        $whereCondition =  $whereCondition." and ".TemplateController::getConditionPart($token,$condition1,$condition1token) . " ".$operator ." ". TemplateController::getConditionPart($token,$condition2,$condition2token);
-                    }else{
-                        $i = $i + 1;
-                        $condition1 = $comands[$i];
-                        $i = $i + 1;
-                        $condition1token = $comands[$i];
-                        $whereCondition = $whereCondition." and ".TemplateController::getConditionPart($token,$condition1,$condition1token);
-                    }
-                    $i = $i + 1;
-                }
-                $totalSize = DB::select('select * from companies_view where parent_id = ? and event_id = ? '. $whereCondition, [$companyId,$eventId]);
-                $templates = DB::select('select * from companies_view where parent_id = ? and event_id = ? '. $whereCondition." LIMIT ". $size. " OFFSET ". $skip, [$companyId,$eventId]);
-            }else{
-                $skip = $size * $values;
-                $templates = DB::select("select * from companies_view where parent_id = ? and event_id = ? LIMIT ". $size. " OFFSET ". $skip, [$companyId,$eventId]);
+                $offset = $comands[0];
             }
         }
+        $body = [
+            'eventID' => $eventId,
+            'companyID' => $companyId,
+            'offset' => $offset,
+            'size' => 10,
+            'filters' => $values
+        ];
+        $result = CallAPI::postAPI('company/subsidiary/getAll',$body);
+        $errCode = $result['errCode'];
+        $errMsg = $result['errMsg'];
+        $data = $result['data'];
+        $data = json_decode(json_encode($data));
+        // var_dump($data);
+        // exit;
         return Response::json(array(
             'success' =>true,
             'code' => 1,
-            'size' => round(sizeof($totalSize)/2),
-            'templates' => $templates,
+            'size' => $data->gridcount,
+            'templates' => $data->data,
             'message' => 'hi'
         ));
+        // $totalSize = DB::select('select * from companies_view where parent_id = ? and event_id = ?', [$companyId,$eventId]);
+        // //$totalSize = Template::latest()->get();
+        // $size = 10;
+        // $whereCondition = "";
+        // if($values != null){
+        //     if(str_contains($values,",")){
+        //         $comands = explode(",",$values);
+        //         $skip = $size * $comands[0];
+        //         $c_size = sizeof($comands);
+        //         $i = 1;
+        //         while($i < sizeof($comands)){
+        //             $token = $comands[$i];
+        //             $i = $i + 1;
+        //             $complexityType = $comands[$i];
+        //             if($complexityType == "C"){
+        //                 $i = $i + 1;
+        //                 $condition1 = $comands[$i];
+        //                 $i = $i + 1;
+        //                 $condition1token = $comands[$i];
+        //                 $i = $i + 1;
+        //                 $operator = $comands[$i];
+        //                 $i = $i + 1;
+        //                 $condition2 = $comands[$i];
+        //                 $i = $i + 1;
+        //                 $condition2token = $comands[$i];
+        //                 $whereCondition =  $whereCondition." and ".TemplateController::getConditionPart($token,$condition1,$condition1token) . " ".$operator ." ". TemplateController::getConditionPart($token,$condition2,$condition2token);
+        //             }else{
+        //                 $i = $i + 1;
+        //                 $condition1 = $comands[$i];
+        //                 $i = $i + 1;
+        //                 $condition1token = $comands[$i];
+        //                 $whereCondition = $whereCondition." and ".TemplateController::getConditionPart($token,$condition1,$condition1token);
+        //             }
+        //             $i = $i + 1;
+        //         }
+        //         $totalSize = DB::select('select * from companies_view where parent_id = ? and event_id = ? '. $whereCondition, [$companyId,$eventId]);
+        //         $templates = DB::select('select * from companies_view where parent_id = ? and event_id = ? '. $whereCondition." LIMIT ". $size. " OFFSET ". $skip, [$companyId,$eventId]);
+        //     }else{
+        //         $skip = $size * $values;
+        //         $templates = DB::select("select * from companies_view where parent_id = ? and event_id = ? LIMIT ". $size. " OFFSET ". $skip, [$companyId,$eventId]);
+        //     }
+        // }
+        // return Response::json(array(
+        //     'success' =>true,
+        //     'code' => 1,
+        //     'size' => round(sizeof($totalSize)/2),
+        //     'templates' => $templates,
+        //     'message' => 'hi'
+        // ));
         //return Response::json($templates);
     }
 
@@ -858,6 +939,20 @@ class CompanyAdminController extends Controller
 
     public function subCompanyAdd($id,$companyId)
     {
+        $body = [];
+        $result = CallAPI::postAPI('company/subsidiary/getList',$body);
+        $errCode = $result['errCode'];
+        $errMsg = $result['errMsg'];
+        $data = $result['data'];
+        $data = json_decode(json_encode($data));
+        //return Response::json($data->data[0]);
+        // var_dump($data->data->companyCategories);
+        // exit;
+
+        $where = array('id' => $id);
+        $event = Event::where($where)->first();
+        $where = array('status' => 1);
+
         $where = array('id' => $id);
         $event = Event::where($where)->first();
         $where = array('id' => $companyId);
@@ -877,12 +972,12 @@ class CompanyAdminController extends Controller
 //             $countrySelectOption = new SelectOption($country->id, $country->name);
 //             $countrysSelectOptions[] = $countrySelectOption;
 //         }
-        $countries = DB::select('select DISTINCT(ccc.country_id), c.country_name from country_cities_view ccc inner join country_cities_view c on ccc.country_id = c.country_id');
-        foreach ($countries as $country) {
-            $countrySelectOption = new SelectOption($country->country_id, $country->country_name);
-            $countrysSelectOptions[] = $countrySelectOption;
-        }
-
+        // $countries = DB::select('select DISTINCT(ccc.country_id), c.country_name from country_cities_view ccc inner join country_cities_view c on ccc.country_id = c.country_id');
+        // foreach ($countries as $country) {
+        //     $countrySelectOption = new SelectOption($country->country_id, $country->country_name);
+        //     $countrysSelectOptions[] = $countrySelectOption;
+        // }
+        $countrysSelectOptions =  $data->data->countries;
         $citysSelectOptions = array();
         $cities = City::get()->all();
 
@@ -893,26 +988,28 @@ class CompanyAdminController extends Controller
 
         $where = array('status' => 1);
         $categorysSelectOptions = array();
-        $categories = CompanyCategory::where($where)->get()->all();
+        // $categories = CompanyCategory::where($where)->get()->all();
 
-        foreach ($categories as $category) {
-            $categorySelectOption = new SelectOption($category->id, $category->name);
-            $categorysSelectOptions[] = $categorySelectOption;
-        }
+        // foreach ($categories as $category) {
+        //     $categorySelectOption = new SelectOption($category->id, $category->name);
+        //     $categorysSelectOptions[] = $categorySelectOption;
+        // }
+        $categorysSelectOptions = $data->data->companyCategories;
 
         $where = array('status' => 1);
         $accreditationCategorysSelectOptions = array();
-        $accreditationCategories = AccreditationCategory::where($where)->get()->all();
+        // $accreditationCategories = AccreditationCategory::where($where)->get()->all();
 
-        foreach ($accreditationCategories as $accreditationCategory) {
-            $accreditationCategorysSelectOption = new SelectOption($accreditationCategory->id, $accreditationCategory->name);
-            $accreditationCategorysSelectOptions[] = $accreditationCategorysSelectOption;
-        }
+        // foreach ($accreditationCategories as $accreditationCategory) {
+        //     $accreditationCategorysSelectOption = new SelectOption($accreditationCategory->id, $accreditationCategory->name);
+        //     $accreditationCategorysSelectOptions[] = $accreditationCategorysSelectOption;
+        // }
 
-        $companyStatus1 = new SelectOption(1, 'Active');
-        $companyStatus2 = new SelectOption(0, 'InActive');
-        //$companyStatus3 = new SelectOption(3,'Invited');
-        $companyStatuss = [$companyStatus1, $companyStatus2];
+        // $companyStatus1 = new SelectOption(1, 'Active');
+        // $companyStatus2 = new SelectOption(0, 'InActive');
+        // //$companyStatus3 = new SelectOption(3,'Invited');
+        // $companyStatuss = [$companyStatus1, $companyStatus2];
+        $companyStatuss = $data->data->companyStatus;
         $subCompany_nav = 1;
         if($company->parent_id != null){
             $subCompany_nav = 0;

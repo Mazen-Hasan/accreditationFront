@@ -14,17 +14,19 @@ trait CallAPI
 
 
         //Super admin
-        $token = 'dc84b0ba-0234-11ed-a655-e8d8d1fd9cf6';
+        //$token = 'dc84b0ba-0234-11ed-a655-e8d8d1fd9cf6';
         //for ivan
         //$token = '3d7a48e4-f1d1-11ec-be2a-aae9fe74b1d2';
 
         //event admin 1
         //$token = 'b084e1b2-fa23-11ec-a655-e8d8d1fd9cf6';
         ////for ivan
-//        $token = 'a11f33a0-007c-11ed-be2a-aae9fe74b1d2';
+        //$token = 'a11f33a0-007c-11ed-be2a-aae9fe74b1d2';
 
         //company admin
         //$token = '54d86938-fa25-11ec-a655-e8d8d1fd9cf6';
+        //for ican
+        $token = "a63f3b2e-0350-11ed-902a-acde48001122";
         $client = new \GuzzleHttp\Client([
             'base_uri' => $base_url,
             'headers' => ['Content-Type' => $content_type, "Accept" => $accept, 'Accept-Language'=> $accept_language,'user-token'=> $token]

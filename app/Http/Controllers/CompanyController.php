@@ -435,20 +435,20 @@ class CompanyController extends Controller
         $where = array('id' => $eventId);
         $event = Event::where($where)->first();
 
-        $where = array('status' => 1);
-        $accreditationCategorysSelectOptions = array();
-//         $accreditationCategories = AccreditationCategory::where($where)->get()->all();
+//         $where = array('status' => 1);
+//         $accreditationCategorysSelectOptions = array();
+// //         $accreditationCategories = AccreditationCategory::where($where)->get()->all();
 
+// //         foreach ($accreditationCategories as $accreditationCategory) {
+// //             $accreditationCategorysSelectOption = new SelectOption($accreditationCategory->id, $accreditationCategory->name);
+// //             $accreditationCategorysSelectOptions[] = $accreditationCategorysSelectOption;
+// //         }
+    
+//         $accreditationCategories = DB::select('select * from event_accreditation_categories_view where event_id = ?',[$eventId]);
 //         foreach ($accreditationCategories as $accreditationCategory) {
-//             $accreditationCategorysSelectOption = new SelectOption($accreditationCategory->id, $accreditationCategory->name);
+//             $accreditationCategorysSelectOption = new SelectOption($accreditationCategory->accreditation_category_id, $accreditationCategory->name);
 //             $accreditationCategorysSelectOptions[] = $accreditationCategorysSelectOption;
 //         }
-    
-        $accreditationCategories = DB::select('select * from event_accreditation_categories_view where event_id = ?',[$eventId]);
-        foreach ($accreditationCategories as $accreditationCategory) {
-            $accreditationCategorysSelectOption = new SelectOption($accreditationCategory->accreditation_category_id, $accreditationCategory->name);
-            $accreditationCategorysSelectOptions[] = $accreditationCategorysSelectOption;
-        }
         $companyAccreditationCategories = DB::select('select * from event_company_accrediation_categories_view where company_id = ? and event_id = ?', [$Id, $eventId]);
         $status = 0;
         $remainingSize = $company->size;
@@ -457,9 +457,37 @@ class CompanyController extends Controller
             $remainingSize = $remainingSize - $companyAccreditationCategory->size;
         }
 
+
+
+        $body = [
+            'event_id' => $eventId
+        ];
+        $result = CallAPI::postAPI('company/accreditationCategory/getList',$body);
+        $errCode = $result['errCode'];
+        $errMsg = $result['errMsg'];
+        $data = $result['data'];
+        $data = json_decode(json_encode($data));
+        //$cities = DB::select('select * from cities c where c.country_id = ? ',[$countrytId]);
+        $accreditationCategories = $data->data;
+        //var_dump($data->data);
+        $accreditationCategorysSelectOptions = array();
+        foreach ($accreditationCategories as $accreditationCategory) {
+            $accreditationCategorysSelectOption = new SelectOption($accreditationCategory->accreditation_category_id, $accreditationCategory->name);
+            $accreditationCategorysSelectOptions[] = $accreditationCategorysSelectOption;
+        }
+
         if (request()->ajax()) {
-            $companyAccreditationCategories = DB::select('select * from event_company_accrediation_categories_view where company_id = ? and event_id = ?', [$Id, $eventId]);
-            return datatables()->of($companyAccreditationCategories)
+            $body = [
+                'event_id' => $eventId,
+                'company_id' => $Id
+            ];
+            $result = CallAPI::postAPI('company/accreditationCategory/getAll',$body);
+            $errCode = $result['errCode'];
+            $errMsg = $result['errMsg'];
+            $data = $result['data'];
+            $data = json_decode(json_encode($data));
+            //$companyAccreditationCategories = DB::select('select * from event_company_accrediation_categories_view where company_id = ? and event_id = ?', [$Id, $eventId]);
+            return datatables()->of($data->data)
                 ->addColumn('action', function ($data) use ($event) {
                     $button = "";
                     if($event->status < 3){
@@ -477,49 +505,82 @@ class CompanyController extends Controller
 
     public function editCompanyAccreditSize($id)
     {
-
-        $where = array('id' => $id);
-        $post = CompanyAccreditaionCategory::where($where)->first();
-        return Response::json($post);
+        $body = [
+            'company_accreditation_category_id' => $id
+        ];
+        $result = CallAPI::postAPI('company/accreditationCategory/getByID',$body);
+        $errCode = $result['errCode'];
+        $errMsg = $result['errMsg'];
+        $data = $result['data'];
+        $data = json_decode(json_encode($data));
+        return Response::json($data->data[0]);
+        // $where = array('id' => $id);
+        // $post = CompanyAccreditaionCategory::where($where)->first();
+        // return Response::json($post);
     }
 
     public function storeCompanyAccrCatSize($id, $accredit_cat_id, $size, $company_id, $event_id)
     {
-        $where = array('company_id'=>$company_id, 'event_id' => $event_id);
-        $eventcompnay = EventCompany::where($where)->first();
-        try {
-            $post = CompanyAccreditaionCategory::updateOrCreate(['id' => $id],
-                ['size' => $size,
-                    'event_company_id' => $eventcompnay->id,
-                    'accredit_cat_id' => $accredit_cat_id,
-                    'company_id' => $company_id,
-                    'parent_id' => $eventcompnay->parent_id,
-                    'event_id' => $event_id,
-                    'status' => 2
-                ]);
-
-        } catch (\Exception $e) {
-            return Response::json(array(
-                'code' => 400,
-                'message' => $e->getMessage()
-            ), 400);
+        // var_dump($id);
+        // exit;
+        if($id != 0){
+            $body = [
+                "company_accreditation_category_id"=> $id,
+                "size"=> $size
+            ];
+            $result = CallAPI::postAPI('company/accreditationCategory/edit',$body);
+            $errCode = $result['errCode'];
+            $errMsg = $result['errMsg'];
+            $data = $result['data'];
+            $data = json_decode(json_encode($data));
+        }else{
+            $body = [
+                "event_id"=> $event_id,
+                "company_id"=> $company_id,
+                "accreditation_category_id"=> $accredit_cat_id,
+                "size"=> $size
+            ];
+            $result = CallAPI::postAPI('company/accreditationCategory/add',$body);
+            $errCode = $result['errCode'];
+            $errMsg = $result['errMsg'];
+            $data = $result['data'];
+            $data = json_decode(json_encode($data));
         }
-        return Response::json($post);
+        return Response::json($data);
     }
 
     public function destroyCompanyAccreditCat($id)
     {
-        $post = CompanyAccreditaionCategory::where('id', $id)->delete();
-        return Response::json($post);
+        $body = [
+            'company_accreditation_category_id' => $id
+        ];
+        $result = CallAPI::postAPI('company/accreditationCategory/remove',$body);
+        $errCode = $result['errCode'];
+        $errMsg = $result['errMsg'];
+        $data = $result['data'];
+        $data = json_decode(json_encode($data));
+        return Response::json($data);
+        // $post = CompanyAccreditaionCategory::where('id', $id)->delete();
+        // return Response::json($post);
 
     }
 
     public function Approve($companyId, $eventId)
-    {
-        $where = array('company_id' => $companyId, 'event_id' => $eventId);
-        $companyAccreditCategories = CompanyAccreditaionCategory::where($where)
-            ->update(['status' => 2]);
-        return Response::json($companyAccreditCategories);
+    {        
+        $body = [
+            'event_id' => $eventId,
+            'company_id' => $companyId
+        ];
+        $result = CallAPI::postAPI('company/accreditationCategory/approve',$body);
+        $errCode = $result['errCode'];
+        $errMsg = $result['errMsg'];
+        $data = $result['data'];
+        $data = json_decode(json_encode($data));
+        return Response::json($data);
+        //$where = array('company_id' => $companyId, 'event_id' => $eventId);
+        // $companyAccreditCategories = CompanyAccreditaionCategory::where($where)
+        //     ->update(['status' => 2]);
+        // return Response::json($companyAccreditCategories);
 
     }
 
