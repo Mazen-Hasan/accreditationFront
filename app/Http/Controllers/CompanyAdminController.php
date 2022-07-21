@@ -777,7 +777,54 @@ class CompanyAdminController extends Controller
 
     public function storeSubCompnay(Request $request)
     {
-        $where = array('id' => $request->focal_point);
+        $companyId = $request->company_Id;
+        if($companyId == null){
+            $body = [
+                "name"=> $request->company_name,
+                "address"=> $request->address,
+                "telephone"=> $request->telephone,
+                "website"=> $request->website,
+                "country_id"=> $request->country,
+                "city_id"=> $request->city,
+                "category_id"=> $request->category,
+                "status"=> $request->company_status,
+                "focal_point_id" => $request->focal_point,
+                "event_id" => $request->event_id,
+                "size"=> $request->size,
+                "need_management"=> 0,
+                "parent_id"=> $request->parent_id
+            ];
+            $result = CallAPI::postAPI('company/subsidiary/create',$body);
+            $errCode = $result['errCode'];
+            $errMsg = $result['errMsg'];
+            $data = $result['data'];
+            $data = json_decode(json_encode($data));
+        }else{
+            $body = [
+                "company_id" => $companyId,
+                "name"=> $request->company_name,
+                "address"=> $request->address,
+                "telephone"=> $request->telephone,
+                "website"=> $request->website,
+                "country_id"=> $request->country,
+                "city_id"=> $request->city,
+                "category_id"=> $request->category,
+                "status"=> $request->company_status,
+                "focal_point_id" => $request->focal_point,
+                "event_id" => $request->event_id,
+                "size"=> $request->size,
+                "need_management"=> 0,
+                "parent_id"=> $request->parent_id
+            ];
+            $result = CallAPI::postAPI('company/subsidiary/edit',$body);
+            $errCode = $result['errCode'];
+            $errMsg = $result['errMsg'];
+            $data = $result['data'];
+            $data = json_decode(json_encode($data)); 
+        }
+
+
+        /*$where = array('id' => $request->focal_point);
         $focalPoint = FocalPoint::where($where)->first();
         $companyId = $request->company_Id;
         if ($companyId == null) {
@@ -828,14 +875,85 @@ class CompanyAdminController extends Controller
                 'size' => $request->size,
                 'need_management' => 0
             ]);
-        }
+        }*/
 
-        return Response::json($company);
+        return Response::json($data);
     }
 
     public function subCompanyEdit($id, $eventid)
     {
-        $where = array('id' => $eventid);
+        $body = [
+            'event_id' => $eventid,
+            'company_id' => $id
+        ];
+        $result = CallAPI::postAPI('company/getByID',$body);
+        $errCode = $result['errCode'];
+        $errMsg = $result['errMsg'];
+        $data = $result['data'];
+        $data = json_decode(json_encode($data));
+        $post = $data->data[0];
+        //return Response::json($data->data[0]);
+
+        $body = [
+            'focal_point_id' => $post->focal_point_id
+        ];
+        $result = CallAPI::postAPI('focalPoint/getByID',$body);
+        $errCode = $result['errCode'];
+        $errMsg = $result['errMsg'];
+        $data = $result['data'];
+        $data = json_decode(json_encode($data));
+        $focalPoints = $data->data;
+
+        $focalPointsOption = array();
+        foreach ($focalPoints as $focalPoint) {
+            $focalPointSelectOption = new SelectOption($focalPoint->id, $focalPoint->name . ' ' . $focalPoint->last_name);
+            $focalPointsOption[] = $focalPointSelectOption;
+        }
+
+        $body = [];
+        $result = CallAPI::postAPI('company/subsidiary/getList',$body);
+        $errCode = $result['errCode'];
+        $errMsg = $result['errMsg'];
+        $data = $result['data'];
+        $data = json_decode(json_encode($data));
+
+        $countrysSelectOptions = array();
+
+        $countrysSelectOptions = $data->data->countries;
+
+        $categorysSelectOptions = array();
+
+        $categorysSelectOptions = $data->data->companyCategories;
+
+        $companyStatuss = $data->data->companyStatus;
+
+        // $accreditationManagement1 = new SelectOption(0, 'Managed By Event Admin');
+        // $accreditationManagement2 = new SelectOption(1, 'Managed By Company Admin');
+        // $accreditationManagements = [$accreditationManagement1,$accreditationManagement2];
+
+        $accreditationCategorysSelectOptions = array();
+
+        //$citysSelectOptions = array();
+
+        $body = [
+            'country_id' => $post->country_id
+        ];
+        $result = CallAPI::postAPI('company/city/getAll',$body);
+        $errCode = $result['errCode'];
+        $errMsg = $result['errMsg'];
+        $data = $result['data'];
+        $data = json_decode(json_encode($data));
+        //$cities = DB::select('select * from cities c where c.country_id = ? ',[$countrytId]);
+        $cities = $data->data;
+        $subcount = 0;
+        $citysSelectOptions = array();
+        foreach ($cities as $city) {
+            $citySelectOption = new SelectOption($city->id, $city->name);
+            $citysSelectOptions[] = $citySelectOption;
+        }
+
+
+        /*$where = array('id' => $eventid);
         $event = Event::where($where)->first();
         $companies = DB::select('select * from companies_view where id = ? and event_id = ?', [$id,$eventid]);
         foreach($companies as $company){
@@ -851,14 +969,14 @@ class CompanyAdminController extends Controller
             $focalPointsOption[] = $focalPointSelectOption;
         }
 
-        $countrysSelectOptions = array();
+        $countrysSelectOptions = array();*/
 //         $countries = Country::get()->all();
 
 //         foreach ($countries as $country) {
 //             $countrySelectOption = new SelectOption($country->id, $country->name);
 //             $countrysSelectOptions[] = $countrySelectOption;
 //         }
-        $countries = DB::select('select DISTINCT(ccc.country_id), c.country_name from country_cities_view ccc inner join country_cities_view c on ccc.country_id = c.country_id');
+        /*$countries = DB::select('select DISTINCT(ccc.country_id), c.country_name from country_cities_view ccc inner join country_cities_view c on ccc.country_id = c.country_id');
         foreach ($countries as $country) {
             $countrySelectOption = new SelectOption($country->country_id, $country->country_name);
             $countrysSelectOptions[] = $countrySelectOption;
@@ -899,35 +1017,36 @@ class CompanyAdminController extends Controller
         $eventcompanysize = EventCompany::where(['event_id'=> $eventid,'company_id'=> $parentId])->first();
         $allwoedSize = $eventcompanysize->size;
 
-        $eventsubcompanysize = EventCompany::where(['event_id'=> $eventid,'company_id'=> $post->id])->first();
-        $allwoedSize = $allwoedSize + $eventsubcompanysize->size;
-        $eventcompanies = EventCompany::where(['event_id'=> $eventid,'parent_id'=> $parentId])->get()->all();
-        foreach($eventcompanies as $eventcompnay){
-            $allwoedSize = $allwoedSize - $eventcompnay->size;
-        }
-        $participants = CompanyStaff::where(['company_id'=>$parentId])->get()->all();
-        foreach($participants as $participant){
-            $allwoedSize = $allwoedSize - 1;
-        }
+        $eventsubcompanysize = EventCompany::where(['event_id'=> $eventid,'company_id'=> $post->id])->first();*/
+        $allwoedSize = 1000;
+        //$allwoedSize = $allwoedSize + $eventsubcompanysize->size;
+        // $eventcompanies = EventCompany::where(['event_id'=> $eventid,'parent_id'=> $parentId])->get()->all();
+        // foreach($eventcompanies as $eventcompnay){
+        //     $allwoedSize = $allwoedSize - $eventcompnay->size;
+        // }
+        // $participants = CompanyStaff::where(['company_id'=>$parentId])->get()->all();
+        // foreach($participants as $participant){
+        //     $allwoedSize = $allwoedSize - 1;
+        // }
 
-        if (request()->ajax()) {
-            $companyAccreditationCategories = DB::select('select * from company_accreditaion_categories_view where company_id = ?', [$id]);
-            return datatables()->of($companyAccreditationCategories)
-                ->addColumn('action', function ($data) {
-                    $button = '<a href="javascript:void(0);" data-toggle="tooltip"  id="edit-company-accreditation" data-id="' . $data->id . '" data-original-title="Edit" title="Edit"><i class="fas fa-edit"></i></a>';
-                    $button .= '&nbsp;&nbsp;';
-                    $button .= '<a href="javascript:void(0);" id="delete-company-accreditation" data-toggle="tooltip" data-original-title="Delete" data-id="' . $data->id . '" class="delete btn btn-danger" title="Delete"><i class="far fa-trash-alt"></i></a>';
-                    return $button;
-                })
-                ->rawColumns(['action'])
-                ->make(true);
-        }
+        // if (request()->ajax()) {
+        //     $companyAccreditationCategories = DB::select('select * from company_accreditaion_categories_view where company_id = ?', [$id]);
+        //     return datatables()->of($companyAccreditationCategories)
+        //         ->addColumn('action', function ($data) {
+        //             $button = '<a href="javascript:void(0);" data-toggle="tooltip"  id="edit-company-accreditation" data-id="' . $data->id . '" data-original-title="Edit" title="Edit"><i class="fas fa-edit"></i></a>';
+        //             $button .= '&nbsp;&nbsp;';
+        //             $button .= '<a href="javascript:void(0);" id="delete-company-accreditation" data-toggle="tooltip" data-original-title="Delete" data-id="' . $data->id . '" class="delete btn btn-danger" title="Delete"><i class="far fa-trash-alt"></i></a>';
+        //             return $button;
+        //         })
+        //         ->rawColumns(['action'])
+        //         ->make(true);
+        // }
         $subCompany_nav = 1;
-        if($company->parent_id != null){
-            $subCompany_nav = 0;
-        }
-        return view('pages.CompanyAdmin.subCompany-edit')->with('company', $post)->with('countrys', $countrysSelectOptions)->with('citys', $citysSelectOptions)->with('focalPoints', $focalPointsOption)
-            ->with('categorys', $categorysSelectOptions)->with('accreditationCategorys', $accreditationCategorysSelectOptions)->with('eventId', $eventid)->with('event_name', $event->name)->with('company_name', $post->name)->with('statuss', $companyStatuss)->with('subCompany_nav',$subCompany_nav)->with('allowedSize',$allwoedSize);
+        // if($company->parent_id != null){
+        //     $subCompany_nav = 0;
+        // }
+        return view('pages.CompanyAdmin.subCompany-edit')->with('company', $post)->with('countrys', $countrysSelectOptions)->with('citys', $citysSelectOptions)->with('focalPoints', $focalPointsOption)->with('companyId',$post->parent_id)
+            ->with('categorys', $categorysSelectOptions)->with('accreditationCategorys', $accreditationCategorysSelectOptions)->with('eventId', $eventid)->with('event_name', '$event->name')->with('company_name', $post->name)->with('statuss', $companyStatuss)->with('subCompany_nav',$subCompany_nav)->with('allowedSize',$allwoedSize);
     }
 
     public function destroy($id)
@@ -1135,26 +1254,46 @@ class CompanyAdminController extends Controller
 
 	public function Invite($companyId,$eventId)
     {
-        $post = EventCompany::updateOrCreate(['company_id' => $companyId,'event_id'=>$eventId],
-            [
-                'status' => 3
-            ]);
-            $focal_point = DB::select('select * from focal_points f where f.id = ?', [$post->focal_point_id]);
-            $event = Event::where(['id'=>$eventId])->first();
-            $company = Company::where(['id'=>$companyId])->first();
-//            NotificationController::sendAlertNotification($focal_point[0]->account_id, 0, $event->name . ': ' . $company->name . ': ' . 'Event invitation', Route('companyParticipants' , [$companyId, $eventId]));
+        $body = [
+            'event_id' => $eventId,
+            'company_id' => $companyId
+        ];
+        $result = CallAPI::postAPI('company/subsidiary/invite',$body);
+        $errCode = $result['errCode'];
+        $errMsg = $result['errMsg'];
+        $data = $result['data'];
+        $data = json_decode(json_encode($data));
+        return Response::json($data->data);
+//         $post = EventCompany::updateOrCreate(['company_id' => $companyId,'event_id'=>$eventId],
+//             [
+//                 'status' => 3
+//             ]);
+//             $focal_point = DB::select('select * from focal_points f where f.id = ?', [$post->focal_point_id]);
+//             $event = Event::where(['id'=>$eventId])->first();
+//             $company = Company::where(['id'=>$companyId])->first();
+// //            NotificationController::sendAlertNotification($focal_point[0]->account_id, 0, $event->name . ': ' . $company->name . ': ' . 'Event invitation', Route('companyParticipants' , [$companyId, $eventId]));
 
-            $notification_type = Config::get('enums.notification_types.EIN');
-            NotificationController::sendNotification($notification_type, $event->name, '', $focal_point[0]->account_id, 0, $event->name . ':' . 'Event invitation',
-            Route('companyParticipants' , [$companyId, $eventId]));
+//             $notification_type = Config::get('enums.notification_types.EIN');
+//             NotificationController::sendNotification($notification_type, $event->name, '', $focal_point[0]->account_id, 0, $event->name . ':' . 'Event invitation',
+//             Route('companyParticipants' , [$companyId, $eventId]));
 
-        return Response::json($post);
+        //return Response::json($data);
     }
 
     public function getSubCompnayCities($countrytId)
     {
-        $cities = DB::select('select * from cities c where c.country_id = ? ',[$countrytId]);
 
+        $body = [
+            'country_id' => $countrytId
+        ];
+        $result = CallAPI::postAPI('company/city/getAll',$body);
+        $errCode = $result['errCode'];
+        $errMsg = $result['errMsg'];
+        $data = $result['data'];
+        $data = json_decode(json_encode($data));
+        //$cities = DB::select('select * from cities c where c.country_id = ? ',[$countrytId]);
+        $cities = $data->data;
+        //var_dump($data->data);
         $subcount = 0;
         $citySelectOptions = array();
         foreach ($cities as $city) {
@@ -1167,5 +1306,19 @@ class CompanyAdminController extends Controller
             $citySelectOptions[] = $citySelectOption;
         }
         return Response::json($citySelectOptions);
+        // $cities = DB::select('select * from cities c where c.country_id = ? ',[$countrytId]);
+
+        // $subcount = 0;
+        // $citySelectOptions = array();
+        // foreach ($cities as $city) {
+        //     // if ($subcount == 0) {
+        //     //     $compnaySelectOption = new SelectOption(0, 'All');
+        //     //     $companySelectOptions[] = $compnaySelectOption;
+        //     //     $subcount = 1;
+        //     // }
+        //     $citySelectOption = new SelectOption($city->id, $city->name);
+        //     $citySelectOptions[] = $citySelectOption;
+        // }
+        // return Response::json($citySelectOptions);
     }
 }

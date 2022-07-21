@@ -29,6 +29,11 @@
 
                         </div>
                         <div class="table-responsive">
+                        <input type="hidden" name="badge_id" id="badge_id" value="{{$badge_id}}">
+                        <input type="hidden" name="badge_data" id="badge_data" value="{{$badge_data}}">
+                        <input type="hidden" name="badge_size" id="badge_size" value="{{$badge_size}}">
+                        <input type="hidden" name="bg_color" id="bg_color" value="{{$bg_color}}">
+                        <input type="hidden" name="default_bg_image" id="default_bg_image" value="{{$default_bg_image}}">
                             <div class="container">
                                 <div class="row">
                                     <div class="col-sm-4">
@@ -58,15 +63,27 @@
                                                         <div id="size-options">
                                                             <form class="form-group">
                                                                 <div class="form-check">
-                                                                    <input style="margin-left: 10px;" class="form-check-input" type="radio" name="radio-size" id="size-1" value="0" checked/>
+                                                                    <input style="margin-left: 10px;" class="form-check-input" type="radio" name="radio-size" id="size-1" value="0"
+                                                                    @if ($badge_size == 0)
+                                                                        checked
+                                                                    @endif
+                                                                    />
                                                                     <label class="form-check-label" for="size-1"> Credit Card Size(53,98 * 85,60 mm)</label>
                                                                 </div>
                                                                 <div class="form-check">
-                                                                    <input style="margin-left: 10px;" class="form-check-input" type="radio" name="radio-size" id="size-2"  value="1"/>
+                                                                    <input style="margin-left: 10px;" class="form-check-input" type="radio" name="radio-size" id="size-2"  value="1"
+                                                                    @if ($badge_size == 1)
+                                                                        checked
+                                                                    @endif
+                                                                    />
                                                                     <label class="form-check-label" for="size-2"> Oversize (9 * 14 Cm) </label>
                                                                 </div>
                                                                 <div class="form-check">
-                                                                    <input style="margin-left: 10px;" class="form-check-input" type="radio" name="radio-size" id="size-3"  value="2"/>
+                                                                    <input style="margin-left: 10px;" class="form-check-input" type="radio" name="radio-size" id="size-3"  value="2"
+                                                                    @if ($badge_size == 2)
+                                                                        checked
+                                                                    @endif
+                                                                    />
                                                                     <label class="form-check-label" for="size-3"> Concert Size (70 * 100 mm) </label>
                                                                 </div>
                                                             </form>
@@ -84,10 +101,25 @@
                                             <div class="card-body">
                                                 <div id="div-badge-elem">
                                                     <!-- <span><label>Personal</label><button data-id="personal" data-type="rec" id="personal" class="personal_img_add">add</button></span> -->
-                                                    <span style="display:block;height:40px"><a href="javascript:void(0)" data-id="personal" data-type="rec" data-action="add" id="personal" class="personal_img_add"><i class="fas fa-plus" style="padding-right: 20px ;"></i></a>Personal Image</span>
+                                                    <!-- <span style="display:block;height:40px"><a href="javascript:void(0)" data-id="personal" data-type="rec" data-action="add" id="personal" class="personal_img_add"><i class="fas fa-plus" style="padding-right: 20px ;"></i></a>Personal Image</span>
                                                     <span style="display:block;height:40px"><a href="javascript:void(0)" data-id="full_name" data-type="text" data-action="add" id="full_name" class="personal_img_add"><i class="fas fa-plus" style="padding-right: 20px ;"></i></a>Full Name</span>
                                                     <span style="display:block;height:40px"><a href="javascript:void(0)" data-id="category" data-type="text" data-action="add" id="category" class="personal_img_add"><i class="fas fa-plus" style="padding-right: 20px ;"></i></a>Accreditation Category</span>
-                                                    <span style="display:block;height:40px"><a href="javascript:void(0)" data-id="company" data-type="text" data-action="add" id="company" class="personal_img_add"><i class="fas fa-plus" style="padding-right: 20px ;"></i></a>Company Name</span>
+                                                    <span style="display:block;height:40px"><a href="javascript:void(0)" data-id="company" data-type="text" data-action="add" id="company" class="personal_img_add"><i class="fas fa-plus" style="padding-right: 20px ;"></i></a>Company Name</span> -->
+                                                    @foreach ($registration_form_fields as $registration_form_field)
+                                                        @if ($registration_form_field->type == 'Attachment')
+                                                            @if(str_contains($badge_data, str_replace(' ', '_', $registration_form_field->label_en)))
+                                                                <span style="display:block;height:40px"><a href="javascript:void(0)" data-id="{{ str_replace(' ', '_', $registration_form_field->label_en);}}" data-type="rec" data-action="remove" id="{{ str_replace(' ', '_', $registration_form_field->label_en);}}" class="personal_img_add"><i class="fas fa-minus" style="padding-right: 20px ;"></i></a>{{ $registration_form_field->label_en}}</span>
+                                                            @else
+                                                                <span style="display:block;height:40px"><a href="javascript:void(0)" data-id="{{ str_replace(' ', '_', $registration_form_field->label_en);}}" data-type="rec" data-action="add" id="{{ str_replace(' ', '_', $registration_form_field->label_en);}}" class="personal_img_add"><i class="fas fa-plus" style="padding-right: 20px ;"></i></a>{{ $registration_form_field->label_en}}</span>
+                                                            @endif
+                                                        @else
+                                                            @if(str_contains($badge_data, str_replace(' ', '_', $registration_form_field->label_en)))
+                                                                <span style="display:block;height:40px"><a href="javascript:void(0)" data-id="{{ str_replace(' ', '_', $registration_form_field->label_en);}}" data-type="text" data-action="remove" id="{{ str_replace(' ', '_', $registration_form_field->label_en);}}" class="personal_img_add"><i class="fas fa-minus" style="padding-right: 20px ;"></i></a>{{ $registration_form_field->label_en}}</span>
+                                                            @else
+                                                                <span style="display:block;height:40px"><a href="javascript:void(0)" data-id="{{ str_replace(' ', '_', $registration_form_field->label_en);}}" data-type="text" data-action="add" id="{{ str_replace(' ', '_', $registration_form_field->label_en);}}" class="personal_img_add"><i class="fas fa-plus" style="padding-right: 20px ;"></i></a>{{ $registration_form_field->label_en}}</span>
+                                                            @endif
+                                                        @endif
+                                                    @endforeach
                                                     <!-- <span><label>Full Name</label><button data-id="full_name" data-type="text" id="full_name" class="personal_img_add">add</button></span>
                                                     <span><label>Category</label><button data-id="category" data-type="text" id="category" class="personal_img_add">add</button></span>
                                                     <span><label>Company</label><button data-id="company" data-type="text" id="company" class="personal_img_add">add</button></span> -->
@@ -144,6 +176,9 @@
                                                     </div>
                                                 </div>
                                             </div>
+                                        </div>
+                                        <div class="row" style="padding-top:10px; width:200px; float:right">
+                                            <button id ="save_bage">Save</button>
                                         </div>
                                         <br>
                                         <!-- <div class="row">
@@ -204,4 +239,47 @@
 @endsection
 @section('script')
         <script src="js/designer/designer.js"></script>
+        <script>
+            $('#save_bage').on('click', function() {
+                $.ajaxSetup({
+                    headers: {
+                        'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+                    }
+                });
+                var v_badge_id = $('#badge_id').val();
+                var v_badge_size = $('#badge_size').val();
+                var v_badge_data = $('#badge_data').val();
+                var v_bg_color = $('#bg_color').val();
+                var v_default_bg_image = $('#default_bg_image').val();
+                var v_width = $('#div-badge').width();
+                var v_height = $('#div-badge').height();
+                var json = stage.toJSON();
+                console.log('v_badge_id:'+v_badge_id+', v_badge_size:' + v_badge_size + ', v_badge_data:'+json+', v_bg_color:'+ v_bg_color + ', v_default_bg_image:' + v_default_bg_image + ', v_width:' + v_width + ', v_height:' + v_height);
+                // alert(ttemplate_id + v_width + v_height +json);
+                console.log(json);
+                var url = "{{ route('saveBadge') }}";
+                //var data = [];
+                //data.push({'badge': json, 'template_id': ttemplate_id,'width':v_width,'height':v_height}) ;
+                $.ajax({
+                    data: 
+                    {   'badge': json, 
+                        'badge_id': v_badge_id,
+                        'width':v_width,
+                        'height':v_height,
+                        'default_bg_image':v_default_bg_image,
+                        'bg_color':v_bg_color,
+                        'badge_size' : v_badge_size
+                    },
+                    type: "post",
+                    url: url,
+                    success: function (data) {
+                        alert(data);
+                    },
+                    error: function (data) {
+
+                    }
+                });
+            });
+
+        </script>
 @endsection

@@ -8,6 +8,8 @@ use App\Models\TemplateField;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Response;
+use App\Http\Traits\CallAPI;
+use App\Http\Traits\ParseAPIResponse;
 
 class TemplateBadgeFieldController extends Controller
 {
@@ -81,6 +83,55 @@ class TemplateBadgeFieldController extends Controller
     }
 
     public function designer(){
-        return view('pages.Template.template-badge-designer');
+        $body = [
+            'registration_form_id' =>  '955708d3-a1e4-4d1e-a38a-282246028931'
+        ];
+
+        $url = 'registrationFormField/getAll';
+
+        $result =  CallAPI::postAPI($url, $body);
+        $data = $result['data'];
+        $data = json_decode(json_encode($data));
+        $registration_form_fields  = $data->data;
+        $body = [
+            'badge_id' => 'b7b5cd5a-04ef-11ed-902a-acde48001122'
+        ];
+        $result = CallAPI::postAPI('badge/getByID',$body);
+        $errCode = $result['errCode'];
+        $errMsg = $result['errMsg'];
+        $data = $result['data'];
+        $data = json_decode(json_encode($data));
+        $badge_data = $data->data[0]->badge_data;
+        $width = $data->data[0]->width;
+        $height = $data->data[0]->high;
+        $badge_size = $data->data[0]->badge_size;
+        $bg_color = $data->data[0]->bg_color;
+        $default_bg_image = $data->data[0]->bg_image;
+        return view('pages.Template.template-badge-designer')->with('registration_form_fields',$registration_form_fields)->with('badge_id','b7b5cd5a-04ef-11ed-902a-acde48001122')->with('badge_data',$badge_data)->with('width',$width)->with('height',$height)->with('badge_size',$badge_size)->with('bg_color',$bg_color)->with('default_bg_image',$default_bg_image);
+    }
+
+    public function saveBadge(Request $request){
+        $badge_id = $request->badge_id;
+        $badge = $request->badge;
+        $width = $request->width;
+        $height = $request->height;
+        $badge_size =  $request->badge_size;
+        $bg_color =  $request->bg_color;
+        $default_bg_image =  $request->default_bg_image;
+        $body = [
+            "badge_id" => $badge_id,
+            "badge_data"=> $badge,
+            "width" => $width,
+            "height" => $height,
+            "bg_color" => $bg_color,
+            "default_bg_image" => $default_bg_image,
+            "badge_size" => $badge_size
+        ];
+        $result = CallAPI::postAPI('badge/update',$body);
+        $errCode = $result['errCode'];
+        $errMsg = $result['errMsg'];
+        $data = $result['data'];
+        $data = json_decode(json_encode($data));
+        return Response::json($data);
     }
 }

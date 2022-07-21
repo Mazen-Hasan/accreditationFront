@@ -25,7 +25,7 @@ trait CallAPI
 
         //company admin
         //$token = '54d86938-fa25-11ec-a655-e8d8d1fd9cf6';
-        //for ican
+        //for ivan
         $token = "a63f3b2e-0350-11ed-902a-acde48001122";
         $client = new \GuzzleHttp\Client([
             'base_uri' => $base_url,

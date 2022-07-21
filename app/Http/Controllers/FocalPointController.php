@@ -128,18 +128,20 @@ class FocalPointController extends Controller
         $errMsg = $result['errMsg'];
         $data = $result['data'];
         $data = json_decode(json_encode($data));
-        $body = [
-            'focal_point_email' => $request->account_email
-        ];
-        $result = CallAPI::postAPI('focalPoint/getByEmail',$body);
-        $errCode = $result['errCode'];
-        $errMsg = $result['errMsg'];
-        $data = $result['data'];
-        $data = json_decode(json_encode($data));
+        if($errCode == null){
+            $body = [
+                'focal_point_email' => $request->account_email
+            ];
+            $result = CallAPI::postAPI('focalPoint/getByEmail',$body);
+            $errCode = $result['errCode'];
+            $errMsg = $result['errMsg'];
+            $data = $result['data'];
+            $data = json_decode(json_encode($data));
+        }
         return Response::json($data->data[0]);
 
 
-        return Response::json($data->data[0]);
+        //return Response::json($data->data[0]);
         // if($request->entry_type == 'instant'){
         //         $postId = $request->focal_point_id;
         //         if ($postId == null) {

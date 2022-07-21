@@ -343,6 +343,7 @@ Route::group(['middleware' => 'role:super-admin'], function () {
 
 
     Route::get('badge-designer',[App\Http\Controllers\TemplateBadgeFieldController::class, 'designer'])->name('badgeDesigner');
+    Route::post('save-badge',[App\Http\Controllers\TemplateBadgeFieldController::class, 'saveBadge'])->name('saveBadge');
 
     Route::get('/roles', [App\Http\Controllers\RoleController::class, 'index'])->name('roles');
     Route::resource('RoleController', 'App\Http\Controllers\RoleController');
