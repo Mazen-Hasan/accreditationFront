@@ -278,7 +278,7 @@
                 $('#confirmTitle').html('Delete Company Accreditation');
                 $('#curr_element_id').val(post_id);
                 $('#action_button').val('delete');
-                var confirmText = 'Are You sure want to delete ?';
+                var confirmText = 'Are you sure want to delete ?';
                 $('#confirmText').html(confirmText);
                 $('#delete-element-confirm-modal').modal('show');
             });
@@ -332,7 +332,7 @@
                 $('#confirmTitle').html('Approve Accreditation Category Sizes');
                 $('#curr_element_id').val(post_id);
                 $('#action_button').val('approve');
-                var confirmText = "Are You sure you want to confirm Accreditation Category sizes?";
+                var confirmText = "Are you sure you want to confirm Accreditation Category sizes?";
                 $('#confirmText').html(confirmText);
                 $('#delete-element-confirm-modal').modal('show');
             });

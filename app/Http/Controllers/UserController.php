@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Traits\ParseAPIResponse;
 use App\Models\SelectOption;
 use App\Models\User;
 use Illuminate\Http\Request;
@@ -20,14 +21,27 @@ class UserController extends Controller
     public function index()
     {
         if (request()->ajax()) {
+            $body = [];
 
-            $users = DB::select('select * from users_view');
-            return datatables()->of($users)
+            $url = 'user/getAll';
+
+            $result = ParseAPIResponse:: parseResult(CallAPI::postAPI($url, $body));
+
+            $data = json_decode(json_encode($result['data']['data']));
+
+            return datatables()->of($data)
                 ->addColumn('action', function ($data) {
                 	$button = '&nbsp;&nbsp;';
-                	if($data->role_name != 'Company Admin' && $data->role_name != 'Data Entry'){
-                    	$button .= '<a href="' . route('userEdit', $data->user_id) . '" data-toggle="tooltip"  id="edit-event" data-id="' . $data->user_id . '" data-original-title="Edit" title="Edit"><i class="fas fa-edit"></i></a>';
+                	if($data->can_deactivated == 1){
+                    	$button .= '<a href="' . route('userGetById', $data->user_id) . '" data-toggle="tooltip"  id="edit-event" data-id="' . $data->user_id . '" data-original-title="Edit" title="Edit"><i class="fas fa-edit"></i></a>';
                     	$button .= '&nbsp;&nbsp;';
+                        if($data->status == 1){
+                            $button .= '<a href="javascript:void(0);" id="deActivate-user" data-toggle="tooltip" data-original-title="Deactivate" data-id="' . $data->user_id . '" title="Deactivate"><i class="fas fa-ban"></i></a>';
+                        }
+                        else{
+                            $button .= '<a href="javascript:void(0);" id="activate-user" data-toggle="tooltip" data-original-title="Activate" data-id="' . $data->user_id . '" title="Activate"><i class="fas fa-check-circle"></i></a>';
+                        }
+                        $button .= '&nbsp;&nbsp;';
                     }
                     $button .= '<a href="javascript:void(0);" id="reset_password" data-toggle="tooltip" data-original-title="Delete" data-id="' . $data->user_id . '"  title="Reset password"><i class="fas fa-retweet"></i></a>';
                     $button .= '&nbsp;&nbsp;';
@@ -79,80 +93,128 @@ class UserController extends Controller
         return Response::json($company);
     }
 
-    public function userAdd()
+    public function create()
     {
-        $roles = DB::select('select * from roles');
-        $roleSelectOptions = array();
-        foreach ($roles as $role) {
-        	if($role->slug != 'data-entry' && $role->slug != 'company-admin'){
-            	$roleSelectOption = new SelectOption($role->id, $role->name);
-            	$roleSelectOptions[] = $roleSelectOption;
-            }
-        }
-        return view('pages.Users.user-add')->with('roles', $roleSelectOptions);
+        $body = [];
 
+        $url = 'role/getAll';
+
+        $result = ParseAPIResponse:: parseResult(CallAPI::postAPI($url, $body));
+
+        $roles = $result['data']['data'];
+
+        return view('pages.Users.user-add')->with('roles', $roles);
     }
 
-    public function userEdit($id)
+    public function save(Request $request)
     {
-        $users = DB::select('select * from users_view where user_id = ?', [$id]);
-        foreach ($users as $row) {
-            $user = $row;
-        }
-        $roles = DB::select('select * from roles');
-        $roleSelectOptions = array();
-        foreach ($roles as $role) {
-        	if($role->slug != 'data-entry' && $role->slug != 'company-admin'){
-            	$roleSelectOption = new SelectOption($role->id, $role->name);
-            	$roleSelectOptions[] = $roleSelectOption;
-            }
-        }
-        return view('pages.Users.user-edit')->with('user', $user)->with('roles', $roleSelectOptions);
-    }
-
-    public function resetPassword($id, $password)
-    {
-        $user = User::updateOrCreate(['id' => $id],
-            ['password' => Hash::make($password),
-            ]);
-        return Response::json($user);
-    }
-
-    public function updateUserPermissions(Request $request)
-    {
-        $user_id = $request->user_id;
-        $permissions = $request->permission_ids;
+       $url = 'user/create';
 
         $body = [
-            "user_id" => $user_id,
-            "permission_ids" => $permissions
+            "user_name" => $request->user_name,
+            "email" => $request->email,
+            "password" => $request->password,
+            "role_id" => $request->role_id
         ];
 
-        $result = CallAPI::postAPI('user/permissions/update', $body);
-
-//        $errCode = $result['errCode'];
-//        $errMsg = $result['errMsg'];
-
-        return Response::json($result);
+        return Response::json(ParseAPIResponse:: parseResult(CallAPI::postAPI($url, $body)));
     }
 
-    public function getUserPermissions($user_id)
+    public function getById($id)
     {
+        $url = 'user/getByID';
+
+        $body = [
+            "user_id" => $id
+        ];
+
+        $result = ParseAPIResponse:: parseResult(CallAPI::postAPI($url, $body));
+
+        $user = $result['data'];
+
+        $url = 'role/getAll';
+
+        $body = [
+        ];
+
+        $result = ParseAPIResponse:: parseResult(CallAPI::postAPI($url, $body));
+
+        $roles = $result['data']['data'];
+
+        return view('pages.Users.user-edit')->with('user', $user)->with('roles', $roles);
+    }
+
+    public function update(Request $request)
+    {
+        $url = 'user/update';
+
+        $body = [
+            "user_id" => $request->user_id,
+            "user_name" => $request->user_name,
+            "email" => $request->email,
+            "role_id" => $request->role_id
+        ];
+
+        return Response::json(ParseAPIResponse:: parseResult(CallAPI::postAPI($url, $body)));
+    }
+
+    public function changeStatus($id, $status)
+    {
+        $url = 'user/enable';
+
+        $body = [
+            "user_id" => $id
+        ];
+
+        if($status == 0){
+            $url = 'user/disable';
+        }
+
+        return Response::json(ParseAPIResponse:: parseResult(CallAPI::postAPI($url, $body)));
+    }
+
+    public function passwordReset(Request $request)
+    {
+        $url = 'user/passwordReset';
+
+        $body = [
+            "user_id" => $request->user_id,
+            "new_password" => $request->password,
+        ];
+
+        return Response::json(ParseAPIResponse:: parseResult(CallAPI::postAPI($url, $body)));
+    }
+
+    public function updatePermissions(Request $request)
+    {
+        $url = 'user/permissions/update';
+
+        $body = [
+            "user_id" => $request->user_id,
+            "permission_ids" =>  $request->permission_ids
+        ];
+
+        return Response::json(ParseAPIResponse:: parseResult(CallAPI::postAPI($url, $body)));
+    }
+
+    public function getPermissions($user_id)
+    {
+        $url = 'user/permissions/getAll';
+
         $body = [
             'user_id' => $user_id
         ];
-        $result = CallAPI::postAPI('user/permissions/getAll',$body);
+
+        $result = ParseAPIResponse:: parseResult(CallAPI::postAPI($url,$body));
+
         $errCode = $result['errCode'];
         $errMsg = $result['errMsg'];
         $data = $result['data'];
-        //$role_name = $data['role_name'];
-        $role_name = "SuperAdmin";
-        //$user_name = $data['user_name'];
-        $user_name = "super admin";
-        // $data = json_encode($data['data']);
-        $data ='[{"id":"1", "slug":"event-add", "pre":0},{"id":"2", "slug":"event-edit", "pre":1},{"id":"3", "slug":"event-view", "pre":1},{"id":"4", "slug":"event-complete", "pre":1},{"id":"5", "slug":"event-admin-list", "pre":0}]';
+        $user_name = $data['user_name'];
+        $permissions = json_encode($data['data']);
 
-        return view('pages.Users.user-permissions')->with('user_id',$user_id)->with('role_name',$role_name)->with('permissions', $data)->with('user_name',$user_name);
+        return view('pages.Users.user-permissions')->with('user_id',$user_id)->with('user_name',$user_name)->with('permissions', $permissions)
+            ->with('errMsg', $errMsg)->with('errCode', $errCode);
     }
 
 }

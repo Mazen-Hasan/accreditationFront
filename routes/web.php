@@ -18,113 +18,7 @@ use Illuminate\Support\Facades\Route;
 //Route::post('login', [App\Http\Controllers\CustomAuth::class, 'login'])->name('login');
 //
 //Route::group(['middleware' => 'isLoggedIn'], function () {
-//
-//    Route::resource('EventController', 'App\Http\Controllers\EventController');
-//    Route::get('eventsData/{all}/{values}', 'App\Http\Controllers\EventController@getData')->name('eventsData');
-//
-//    Route::get('/events', [App\Http\Controllers\EventController::class, 'index'])->name('events');
-//    Route::get('/eventsShowAll/{status}', [App\Http\Controllers\EventController::class, 'showAll'])->name('eventsShowall');
-//    Route::get('/event-admins/{event_id}', [App\Http\Controllers\EventController::class, 'eventAdmins'])->name('eventAdmins');
-//    Route::get('/event-admins-remove/{id}', [App\Http\Controllers\EventController::class, 'eventAdminsRemove'])->name('eventAdminsRemove');
-//    Route::post('/event-admins-add', [App\Http\Controllers\EventController::class, 'eventAdminsAdd'])->name('eventAdminsAdd');
-//    Route::get('/event-security-officers/{id}', [App\Http\Controllers\EventController::class, 'eventSecurityOfficers'])->name('eventSecurityOfficers');
-//    Route::get('/event-security-officers-remove/{id}', [App\Http\Controllers\EventController::class, 'eventSecurityOfficersRemove'])->name('eventSecurityOfficersRemove');
-//    Route::post('/event-security-officers-add', [App\Http\Controllers\EventController::class, 'eventSecurityOfficersAdd'])->name('eventSecurityOfficersAdd');
-//    Route::get('/event-security-categories/{id}', [App\Http\Controllers\EventController::class, 'eventSecurityCategories'])->name('eventSecurityCategories');
-//    Route::get('/event-security-categories-remove/{id}', [App\Http\Controllers\EventController::class, 'eventSecurityCategoriesRemove'])->name('eventSecurityCategoriesRemove');
-//    Route::post('/event-security-categories-add', [App\Http\Controllers\EventController::class, 'eventSecurityCategoriesAdd'])->name('eventSecurityCategoriesAdd');
-//    Route::get('/event-check-same-organizer/{id}', [App\Http\Controllers\EventController::class, 'eventCheckSameEventOrganizer'])->name('eventCheckSameEventOrganizer');
-//    Route::get('/event-accreditation-categories/{id}', [App\Http\Controllers\EventController::class, 'eventAccreditationCategories'])->name('eventAccreditationCategories');
-//    Route::get('/event-accreditation-categories-remove/{id}', [App\Http\Controllers\EventController::class, 'eventAccreditationCategoriesRemove'])->name('eventAccreditationCategoriesRemove');
-//    Route::post('/event-accreditation-categories-add', [App\Http\Controllers\EventController::class, 'eventAccreditationCategoriesAdd'])->name('eventAccreditationCategoriesAdd');
-//    Route::get('/event-add', [App\Http\Controllers\EventController::class, 'eventAdd'])->name('eventAdd');
-//    Route::get('/event-edit/{id}', [App\Http\Controllers\EventController::class, 'edit'])->name('eventEdit');
-//    Route::get('/titles', [App\Http\Controllers\TitleController::class, 'index'])->name('titles');
-//    Route::get('/companyCategories', [App\Http\Controllers\CompanyCategoryController::class, 'index'])->name('companyCategories');
-//
-//    Route::post('/event-update-logo', [App\Http\Controllers\EventController::class, 'updateLogo'])->name('updateLogo');
-//
-//
-//    Route::resource('titleController', 'App\Http\Controllers\TitleController');
-//    Route::get('titleController/destroy/{id}', 'App\Http\Controllers\TitleController@destroy');
-//    Route::get('titleController/changeStatus/{id}/{status}', 'App\Http\Controllers\TitleController@changeStatus');
-//
-//    Route::resource('companyCategoryController', 'App\Http\Controllers\CompanyCategoryController');
-//    Route::get('companyCategoryController/destroy/{id}', 'App\Http\Controllers\CompanyCategoryController@destroy');
-//    Route::get('companyCategoryController/changeStatus/{id}/{status}', 'App\Http\Controllers\CompanyCategoryController@changeStatus');
-//
-//    Route::resource('contactController', 'App\Http\Controllers\ContactController');
-//    Route::get('/contacts', [App\Http\Controllers\ContactController::class, 'index'])->name('contacts');
-//    Route::get('/contact-add', [App\Http\Controllers\ContactController::class, 'contactAdd'])->name('contactAdd');
-//    Route::get('/contact-edit/{id}', [App\Http\Controllers\ContactController::class, 'edit'])->name('contactEdit');
-//
-//    Route::get('/securityCategories', [App\Http\Controllers\SecurityCategoryController::class, 'index'])->name('securityCategories');
-//    Route::resource('securityCategoryController', 'App\Http\Controllers\SecurityCategoryController');
-//    Route::get('securityCategoryController/destroy/{id}', 'App\Http\Controllers\SecurityCategoryController@destroy');
-//    Route::get('securityCategoryController/changeStatus/{id}/{status}', 'App\Http\Controllers\SecurityCategoryController@changeStatus');
-//
-//    Route::get('/eventTypes', [App\Http\Controllers\EventTypeController::class, 'index'])->name('eventTypes');
-//    Route::resource('eventTypeController', 'App\Http\Controllers\EventTypeController');
-//    Route::get('eventTypeController/destroy/{id}', 'App\Http\Controllers\EventTypeController@destroy');
-//    Route::get('eventTypeController/changeStatus/{id}/{status}', 'App\Http\Controllers\EventTypeController@changeStatus');
-//
-//    Route::get('/accreditationCategories', [App\Http\Controllers\AccreditationCategoryController::class, 'index'])->name('accreditationCategories');
-//    Route::resource('accreditationCategoryController', 'App\Http\Controllers\AccreditationCategoryController');
-//    Route::get('accreditationCategoryController/destroy/{id}', 'App\Http\Controllers\AccreditationCategoryController@destroy');
-//    Route::get('accreditationCategoryController/changeStatus/{id}/{status}', 'App\Http\Controllers\AccreditationCategoryController@changeStatus');
-//
-//    Route::resource('participantController', 'App\Http\Controllers\ParticipantController');
-//    Route::get('/participants', [App\Http\Controllers\ParticipantController::class, 'index'])->name('participants');
-//    //Route::get('/participant-add', [App\Http\Controllers\ParticipantController::class, 'participantAdd'])->name('participantAdd');
-//    Route::get('/participant-edit/{id}', [App\Http\Controllers\ParticipantController::class, 'edit'])->name('participantEdit');
-//
-//    Route::get('/templates', [App\Http\Controllers\TemplateController::class, 'index'])->name('templates');
-//    Route::get('/template-add', [App\Http\Controllers\TemplateController::class, 'templateAdd'])->name('templateAdd');
-//    Route::resource('templateController', 'App\Http\Controllers\TemplateController');
-//    Route::get('templateController/destroy/{id}', 'App\Http\Controllers\TemplateController@destroy');
-//    Route::get('templateController/changeStatus/{id}/{status}', 'App\Http\Controllers\TemplateController@changeStatus')->name('templateControllerChangeStatus');
-//    Route::get('templateController/changeLock/{id}/{status}', 'App\Http\Controllers\TemplateController@changeLock')->name('templateControllerChangeLock');
-//
-//    Route::resource('emailTemplateController', 'App\Http\Controllers\EmailTemplateController');
-//    Route::get('email-templates', [App\Http\Controllers\EmailTemplateController::class, 'index'])->name('emailTemplates');
-//
-//
-//    Route::resource('userController', 'App\Http\Controllers\UserController');
-//    Route::get('/users', [App\Http\Controllers\UserController::class, 'index'])->name('users');
-//    Route::get('/users-add', [App\Http\Controllers\UserController::class, 'userAdd'])->name('userAdd');
-//    Route::get('/users-edit/{id}', [App\Http\Controllers\UserController::class, 'userEdit'])->name('userEdit');
-//    Route::get('userController/reset_password/{id}/{password}', 'App\Http\Controllers\UserController@resetPassword')->name('userControllerResetPassword');
-//
-//    Route::get('/template-fields/{template_id}', [App\Http\Controllers\TemplateFieldController::class, 'index'])->name('templateFields');
-//    Route::resource('templateFieldController', 'App\Http\Controllers\TemplateFieldController');
-//    Route::get('templateFieldController/destroy/{field_id}', 'App\Http\Controllers\TemplateFieldController@destroy');
-//
-//    Route::get('/field-elements/{field_id}', [App\Http\Controllers\TemplateFieldElementController::class, 'index'])->name('fieldElements');
-//    Route::resource('fieldElementController', 'App\Http\Controllers\TemplateFieldElementController');
-//    Route::get('fieldElementController/destroy/{element_id}', 'App\Http\Controllers\TemplateFieldElementController@destroy');
-//
-//    Route::get('/template-badge', [App\Http\Controllers\TemplateBadgeController::class, 'index'])->name('templateBadge');
-//    Route::resource('templateBadgeController', 'App\Http\Controllers\TemplateBadgeController');
-//    Route::get('templateBadgeController/changeLock/{id}/{status}', 'App\Http\Controllers\TemplateBadgeController@changeLock');
-//
-//    Route::post('store-file', 'App\Http\Controllers\FileUploadController@store');
-//
-//    Route::get('/template-badge-fields/{badge_id}', [App\Http\Controllers\TemplateBadgeFieldController::class, 'index'])->name('templateBadgeFields');
-//    Route::resource('templateBadgeFieldController', 'App\Http\Controllers\TemplateBadgeFieldController');
-//    Route::get('templateBadgeFieldController/destroy/{field_id}', 'App\Http\Controllers\TemplateBadgeFieldController@destroy')->name('TemplateBadgeFieldControllerDestroy');
-//    Route::get('badge-design-generate/{badgeId}', 'App\Http\Controllers\GenerateBadgeController@generatePreview')->name('badgeDesignGenerate');
-//
-//    Route::get('/template-badge-bg/{badge_id}', [App\Http\Controllers\TemplateBadgeBGController::class, 'index'])->name('templateBadgeBGs');
-//    Route::resource('templateBadgeBGController', 'App\Http\Controllers\TemplateBadgeBGController');
-//
-//    Route::get('/contact-titles/{contact_id}', [App\Http\Controllers\ContactTitleController::class, 'index'])->name('contactTitles');
-//    Route::resource('contactTitlesController', 'App\Http\Controllers\ContactTitleController');
-//    Route::get('contactTitlesController/destroy/{field_id}', 'App\Http\Controllers\ContactTitleController@destroy')->name('removeContactTitle');
-//    Route::get('contactTitlesController/store/{contact_id}/{title_id}', 'App\Http\Controllers\ContactTitleController@store')->name('storeContactTitle');
-//
-//    Route::get('templatesData/{values}', 'App\Http\Controllers\TemplateController@getData1')->name('templatesData1');
-//    Route::get('/allEvents', [App\Http\Controllers\EventController::class, 'index'])->name('allEvents');
-//    Route::get('/eventComplete/{eventId}', [App\Http\Controllers\EventController::class, 'eventComplete'])->name('eventComplete');
+
 //});
 
 Auth::routes();
@@ -217,12 +111,23 @@ Route::group(['middleware' => 'role:event-admin'], function () {
 });
 
 Route::group(['middleware' => 'role:super-admin'], function () {
+    //Event
     Route::resource('EventController', 'App\Http\Controllers\EventController');
     Route::get('eventsData/{all}/{values}', 'App\Http\Controllers\EventController@getData')->name('eventsData');
 
     Route::get('/events', [App\Http\Controllers\EventController::class, 'index'])->name('events');
-//    Route::post('/event-add', [App\Http\Controllers\EventController::class, 'add'])->name('eventAdd');
+    Route::get('/event-create', [App\Http\Controllers\EventController::class, 'create'])->name('eventCreate');
+    Route::post('/event-save', [App\Http\Controllers\EventController::class, 'save'])->name('eventSave');
+    Route::get('/event-edit/{event_id}', [App\Http\Controllers\EventController::class, 'edit'])->name('eventEdit');
+
+    Route::get('event/getById/{event_id}', [App\Http\Controllers\EventController::class, 'getById'])->name('eventGetById');
+
+    Route::get('/event/complete/{event_id}', [App\Http\Controllers\EventController::class, 'eventComplete'])->name('eventComplete');
+    Route::post('/event/changeLogo', [App\Http\Controllers\EventController::class, 'changeLogo'])->name('changeLogo');
     Route::get('/eventsShowAll/{status}', [App\Http\Controllers\EventController::class, 'showAll'])->name('eventsShowall');
+
+    Route::get('/allEvents', [App\Http\Controllers\EventController::class, 'index'])->name('allEvents');
+
 
     //Event admins
     Route::get('/event-admins/{event_id}', [App\Http\Controllers\EventController::class, 'eventAdmins'])->name('eventAdmins');
@@ -234,26 +139,20 @@ Route::group(['middleware' => 'role:super-admin'], function () {
     Route::get('/event-security-officers-remove/{event_id}/{security_officer_id}', [App\Http\Controllers\EventController::class, 'eventSecurityOfficerRemove'])->name('eventSecurityOfficerRemove');
     Route::post('/event-security-officers-add', [App\Http\Controllers\EventController::class, 'eventSecurityOfficerAdd'])->name('eventSecurityOfficerAdd');
 
-    Route::get('/event-security-categories/{id}', [App\Http\Controllers\EventController::class, 'eventSecurityCategories'])->name('eventSecurityCategories');
+    Route::get('/event-security-categories/{event_id}', [App\Http\Controllers\EventController::class, 'eventSecurityCategories'])->name('eventSecurityCategories');
     Route::get('/event-security-categories-remove/{event_id}/{security_category_id}', [App\Http\Controllers\EventController::class, 'eventSecurityCategoryRemove'])->name('eventSecurityCategoryRemove');
     Route::post('/event-security-categories-add', [App\Http\Controllers\EventController::class, 'eventSecurityCategoryAdd'])->name('eventSecurityCategoryAdd');
 
-    Route::get('/event-check-same-organizer/{id}', [App\Http\Controllers\EventController::class, 'eventCheckSameEventOrganizer'])->name('eventCheckSameEventOrganizer');
+    Route::get('/event-check-same-organizer/{event_id}', [App\Http\Controllers\EventController::class, 'eventCheckSameEventOrganizer'])->name('eventCheckSameEventOrganizer');
 
     //Event accreditation categories
-    Route::get('/event-accreditation-categories/{id}', [App\Http\Controllers\EventController::class, 'eventAccreditationCategories'])->name('eventAccreditationCategories');
-    Route::get('/event-accreditation-categories-remove/{id}/{accreditation_category_id}', [App\Http\Controllers\EventController::class, 'eventAccreditationCategoryRemove'])->name('eventAccreditationCategoryRemove');
+    Route::get('/event-accreditation-categories/{event_id}', [App\Http\Controllers\EventController::class, 'eventAccreditationCategories'])->name('eventAccreditationCategories');
+    Route::get('/event-accreditation-categories-remove/{event_id}/{accreditation_category_id}', [App\Http\Controllers\EventController::class, 'eventAccreditationCategoryRemove'])->name('eventAccreditationCategoryRemove');
     Route::post('/event-accreditation-categories-add', [App\Http\Controllers\EventController::class, 'eventAccreditationCategoryAdd'])->name('eventAccreditationCategoryAdd');
 
 
-    Route::get('/event-create', [App\Http\Controllers\EventController::class, 'eventCreate'])->name('eventCreate');
-    Route::post('/event-save', [App\Http\Controllers\EventController::class, 'eventSave'])->name('eventSave');
-    Route::get('/event-edit/{id}', [App\Http\Controllers\EventController::class, 'edit'])->name('eventEdit');
     Route::get('/titles', [App\Http\Controllers\TitleController::class, 'index'])->name('titles');
     Route::get('/companyCategories', [App\Http\Controllers\CompanyCategoryController::class, 'index'])->name('companyCategories');
-
-    Route::post('/event-update-logo', [App\Http\Controllers\EventController::class, 'updateLogo'])->name('updateLogo');
-
 
     Route::resource('titleController', 'App\Http\Controllers\TitleController');
     Route::get('titleController/destroy/{id}', 'App\Http\Controllers\TitleController@destroy');
@@ -288,47 +187,54 @@ Route::group(['middleware' => 'role:super-admin'], function () {
     //Route::get('/participant-add', [App\Http\Controllers\ParticipantController::class, 'participantAdd'])->name('participantAdd');
     Route::get('/participant-edit/{id}', [App\Http\Controllers\ParticipantController::class, 'edit'])->name('participantEdit');
 
+    //Templates form
     Route::get('/templates', [App\Http\Controllers\TemplateController::class, 'index'])->name('templates');
-    Route::get('/template-add', [App\Http\Controllers\TemplateController::class, 'templateAdd'])->name('templateAdd');
-    Route::get('/template-getById/{id}', [App\Http\Controllers\TemplateController::class, 'getById'])->name('templateGetById');
+    Route::get('/template/add', [App\Http\Controllers\TemplateController::class, 'templateAdd'])->name('templateAdd');
+    Route::get('/template/getById/{template_id}', [App\Http\Controllers\TemplateController::class, 'getById'])->name('templateGetById');
     Route::resource('templateController', 'App\Http\Controllers\TemplateController');
-    Route::get('templateController/changeStatus/{id}/{status}', [App\Http\Controllers\TemplateController::class, 'changeStatus'])->name('templateControllerChangeStatus');
-    Route::get('templateController/changeLock/{id}/{status}', [App\Http\Controllers\TemplateController::class, 'changeLock'])->name('templateControllerChangeLock');
+    Route::get('template/changeStatus/{template_id}/{status_id}', [App\Http\Controllers\TemplateController::class, 'changeStatus'])->name('templateControllerChangeStatus');
+    Route::get('template/changeLock/{template_id}/{is_locked}', [App\Http\Controllers\TemplateController::class, 'changeLock'])->name('templateControllerChangeLock');
 
-	Route::resource('emailTemplateController', 'App\Http\Controllers\EmailTemplateController');
-    Route::get('email-templates', [App\Http\Controllers\EmailTemplateController::class, 'index'])->name('emailTemplates');
-
-    Route::resource('userController', 'App\Http\Controllers\UserController');
-    Route::get('/users', [App\Http\Controllers\UserController::class, 'index'])->name('users');
-    Route::get('/users-add', [App\Http\Controllers\UserController::class, 'userAdd'])->name('userAdd');
-    Route::get('/users-edit/{id}', [App\Http\Controllers\UserController::class, 'userEdit'])->name('userEdit');
-    Route::get('userController/reset_password/{id}/{password}', 'App\Http\Controllers\UserController@resetPassword')->name('userControllerResetPassword');
-    Route::get('/user-permissions/{userId}', [App\Http\Controllers\UserController::class, 'getUserPermissions'])->name('getUserPermissions');
-    Route::post('/user-permissions/update', [App\Http\Controllers\UserController::class, 'updateUserPermissions'])->name('updateUserPermissions');
-
+    //Template fields
     Route::get('/template-fields/{template_id}', [App\Http\Controllers\TemplateFieldController::class, 'index'])->name('templateFields');
     Route::resource('templateFieldController', 'App\Http\Controllers\TemplateFieldController');
     Route::get('/template-field-getById/{id}', [App\Http\Controllers\TemplateFieldController::class, 'getById'])->name('templateFieldGetById');
     Route::get('/template-field-delete/{id}', [App\Http\Controllers\TemplateFieldController::class, 'delete'])->name('templateFieldDelete');
 
+    //Template fields elements
     Route::get('/template-field-elements/{field_id}', [App\Http\Controllers\TemplateFieldElementController::class, 'index'])->name('templateFieldElements');
     Route::resource('templateFieldElementController', 'App\Http\Controllers\TemplateFieldElementController');
     Route::get('/template-field-element-getById/{id}', [App\Http\Controllers\TemplateFieldElementController::class, 'getById'])->name('templateFieldElementGetById');
     Route::get('/template-field-element-delete/{id}', [App\Http\Controllers\TemplateFieldElementController::class, 'delete'])->name('templateFieldElementDelete');
 
+	Route::resource('emailTemplateController', 'App\Http\Controllers\EmailTemplateController');
+    Route::get('email-templates', [App\Http\Controllers\EmailTemplateController::class, 'index'])->name('emailTemplates');
+
+    //User
+    Route::resource('userController', 'App\Http\Controllers\UserController');
+    Route::get('/users', [App\Http\Controllers\UserController::class, 'index'])->name('users');
+    Route::get('/users/add', [App\Http\Controllers\UserController::class, 'create'])->name('userCreate');
+    Route::post('/users/save', [App\Http\Controllers\UserController::class, 'save'])->name('userSave');
+    Route::post('/users/update', [App\Http\Controllers\UserController::class, 'update'])->name('userUpdate');
+    Route::get('users/getById/{user_id}', [App\Http\Controllers\UserController::class, 'getById'])->name('userGetById');
+    Route::get('users/changeStatus/{user_id}/{status_id}', [App\Http\Controllers\UserController::class, 'changeStatus'])->name('userChangeStatus');
+    Route::post('/users/passwordReset', [App\Http\Controllers\UserController::class, 'passwordReset'])->name('userPasswordReset');
+    Route::get('/user/permissions/{user_id}', [App\Http\Controllers\UserController::class, 'getPermissions'])->name('getUserPermissions');
+    Route::post('/user/permissions/update', [App\Http\Controllers\UserController::class, 'updatePermissions'])->name('updateUserPermissions');
+
+    //Badge
     Route::get('/template-badge', [App\Http\Controllers\TemplateBadgeController::class, 'index'])->name('templateBadge');
     Route::resource('templateBadgeController', 'App\Http\Controllers\TemplateBadgeController');
     Route::get('templateBadgeController/changeLock/{id}/{status}', 'App\Http\Controllers\TemplateBadgeController@changeLock');
-
-    Route::post('store-file', 'App\Http\Controllers\FileUploadController@store');
-
     Route::get('/template-badge-fields/{badge_id}', [App\Http\Controllers\TemplateBadgeFieldController::class, 'index'])->name('templateBadgeFields');
     Route::resource('templateBadgeFieldController', 'App\Http\Controllers\TemplateBadgeFieldController');
     Route::get('templateBadgeFieldController/destroy/{field_id}', 'App\Http\Controllers\TemplateBadgeFieldController@destroy')->name('TemplateBadgeFieldControllerDestroy');
     Route::get('badge-design-generate/{badgeId}', 'App\Http\Controllers\GenerateBadgeController@generatePreview')->name('badgeDesignGenerate');
-
-	Route::get('/template-badge-bg/{badge_id}', [App\Http\Controllers\TemplateBadgeBGController::class, 'index'])->name('templateBadgeBGs');
+    Route::get('/template-badge-bg/{badge_id}', [App\Http\Controllers\TemplateBadgeBGController::class, 'index'])->name('templateBadgeBGs');
     Route::resource('templateBadgeBGController', 'App\Http\Controllers\TemplateBadgeBGController');
+    Route::get('badge-designer',[App\Http\Controllers\TemplateBadgeFieldController::class, 'designer'])->name('badgeDesigner');
+
+    Route::post('store-file', 'App\Http\Controllers\FileUploadController@store');
 
 	Route::get('/contact-titles/{contact_id}', [App\Http\Controllers\ContactTitleController::class, 'index'])->name('contactTitles');
     Route::resource('contactTitlesController', 'App\Http\Controllers\ContactTitleController');
@@ -336,21 +242,22 @@ Route::group(['middleware' => 'role:super-admin'], function () {
     Route::get('contactTitlesController/store/{contact_id}/{title_id}', 'App\Http\Controllers\ContactTitleController@store')->name('storeContactTitle');
 
     Route::get('templatesData/{values}', 'App\Http\Controllers\TemplateController@getData1')->name('templatesData1');
-    Route::get('/allEvents', [App\Http\Controllers\EventController::class, 'index'])->name('allEvents');
-    Route::get('/eventComplete/{eventId}', [App\Http\Controllers\EventController::class, 'eventComplete'])->name('eventComplete');
 
-
-
-
+    // Roles
     Route::get('badge-designer',[App\Http\Controllers\TemplateBadgeFieldController::class, 'designer'])->name('badgeDesigner');
     Route::post('save-badge',[App\Http\Controllers\TemplateBadgeFieldController::class, 'saveBadge'])->name('saveBadge');
 
     Route::get('/roles', [App\Http\Controllers\RoleController::class, 'index'])->name('roles');
     Route::resource('RoleController', 'App\Http\Controllers\RoleController');
-    Route::get('RoleController/destroy/{id}', 'App\Http\Controllers\RoleController@destroy');
-    Route::get('RoleController/changeStatus/{id}/{status}', 'App\Http\Controllers\RoleController@changeStatus');
-    Route::get('/role-permissions/{roleId}', [App\Http\Controllers\RoleController::class, 'getRolePermissions'])->name('getRolePermissions');
-    Route::post('/role-permissions/update', [App\Http\Controllers\RoleController::class, 'updateRolePermissions'])->name('updateRolePermissions');
+    Route::post('/role/create', [App\Http\Controllers\RoleController::class, 'create'])->name('roleCreate');
+    Route::post('/role/update', [App\Http\Controllers\RoleController::class, 'update'])->name('roleUpdate');
+    Route::get('/role/delete/{role_id}', [App\Http\Controllers\RoleController::class, 'delete'])->name('roleDelete');
+    Route::get('role/getById/{role_id}', [App\Http\Controllers\RoleController::class, 'getById'])->name('roleGetById');
+    Route::get('role/changeStatus/{role_id}/{status_id}', [App\Http\Controllers\RoleController::class, 'changeStatus'])->name('roleChangeStatus');
+
+    Route::get('/role/permissions/{roleId}', [App\Http\Controllers\RoleController::class, 'getPermissions'])->name('rolePermissionsGetAll');
+    Route::post('/role/permissions/update', [App\Http\Controllers\RoleController::class, 'updatePermissions'])->name('rolePermissionsUpdate');
+
 });
 
 Route::group(['middleware' => 'role:security-officer'], function () {

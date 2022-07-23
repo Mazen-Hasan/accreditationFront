@@ -160,7 +160,7 @@
             $('#confirmTitle').html('Reject Participation Request');
             $('#curr_element_id').val(post_id);
             $('#action_button').val('reject');
-            var confirmText = "Are You sure you want to reject event participation request?";
+            var confirmText = "Are you sure you want to reject event participation request?";
             $('#confirmText').html(confirmText);
             $('#delete-element-confirm-modal').modal('show');
         });

@@ -648,7 +648,7 @@ class EventController extends Controller
         return Response::json($post);
     }
 
-    public function eventCreate()
+    public function create()
     {
 
         $url = 'event/getList';
@@ -675,7 +675,7 @@ class EventController extends Controller
             ->with('event_status', $event_status)->with('registration_forms', $registration_forms)->with('security_categories', $security_categories);
     }
 
-    public function eventSave(Request $request)
+    public function save(Request $request)
     {
         $event_admins = "";
         foreach ($request->event_admins as $event_admin) {
@@ -718,6 +718,24 @@ class EventController extends Controller
         ];
 
         return Response::json(ParseAPIResponse:: parseResult(CallAPI::postAPI($url, $body)));
+    }
+
+    public function getById($id)
+    {
+        $url = 'event/getByID';
+
+        $body = [
+            "event_id" => $id
+        ];
+
+        $event = ParseAPIResponse:: parseResult(CallAPI::postAPI($url, $body));
+
+
+//        $event = json_decode(json_encode($result));
+
+//        var_dump($event['details']['name']);
+//        exit;
+        return view('pages.Event.event-details')->with('event', $event);
     }
 
     public function edit($id)
@@ -806,17 +824,27 @@ class EventController extends Controller
             ->with('eventStatuss', $eventStatuss)->with('eventForms', $templatesSelectOption)->with('event', $event)->with('securityCategories', $securityCategoriesSelectOption);
     }
 
-    public function updateLogo(Request $request)
+    public function eventComplete($event_id)
     {
-        $event_id = $request->eventId;
-        $logo = $request->logoName;
+        $url = 'event/complete';
 
-        $event = Event::updateOrCreate(['id' => $event_id],
-            [
-                'logo' => $logo
-            ]);
+        $body = [
+            "event_id" => $event_id
+        ];
 
-        return Response::json($event);
+        return Response::json(ParseAPIResponse:: parseResult(CallAPI::postAPI($url, $body)));
+    }
+
+    public function changeLogo(Request $request)
+    {
+        $url = 'event/changeLogo';
+
+        $body = [
+            "event_id" => $request->curr_event_id,
+            "logo_name" => $request->logo_name
+        ];
+
+        return Response::json(ParseAPIResponse:: parseResult(CallAPI::postAPI($url, $body)));
     }
 
     public function show($id)
@@ -919,19 +947,5 @@ class EventController extends Controller
         ];
 
         return Response::json(ParseAPIResponse:: parseResult(CallAPI::postAPI($url, $body)));
-    }
-
-    public function eventComplete($eventId)
-    {
-        $post = Event::updateOrCreate(['id' => $eventId],
-            [
-                'status' => 4
-            ]);
-
-        // $notification_type = Config::get('enums.notification_types.EIN');
-        // NotificationController::sendNotification($notification_type, $event->name, $company->name, $focal_point[0]->account_id, 0,
-        //     $event->name . ': ' . $company->name . ': ' . 'Event invitation', Route('companyParticipants' , [$companyId, $eventId]));
-
-        return Response::json($post);
     }
 }

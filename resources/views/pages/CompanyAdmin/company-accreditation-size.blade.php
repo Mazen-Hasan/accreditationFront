@@ -328,7 +328,7 @@
                 $('#confirmTitle').html('Delete Company Accreditation');
                 $('#curr_element_id').val(post_id);
                 $('#action_button').val('delete');
-                var confirmText = 'Are You sure want to delete ?';
+                var confirmText = 'Are you sure want to delete ?';
                 $('#confirmText').html(confirmText);
                 $('#delete-element-confirm-modal').modal('show');
             });

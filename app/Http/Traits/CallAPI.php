@@ -14,7 +14,7 @@ trait CallAPI
 
 
         //Super admin
-        //$token = 'dc84b0ba-0234-11ed-a655-e8d8d1fd9cf6';
+        $token = '8c241396-09fa-11ed-84ef-e8d8d1fd9cf6';
         //for ivan
         //$token = '3d7a48e4-f1d1-11ec-be2a-aae9fe74b1d2';
 

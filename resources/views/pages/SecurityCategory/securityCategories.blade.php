@@ -242,7 +242,7 @@
                 $('#confirmTitle').html('Activate Security Category');
                 $('#curr_element_id').val(post_id);
                 $('#action_button').val('activate');
-                var confirmText = "Are You sure want to activate this security category?";
+                var confirmText = "Are you sure want to activate this security category?";
                 $('#confirmText').html(confirmText);
                 $('#delete-element-confirm-modal').modal('show');
 
@@ -253,7 +253,7 @@
                 $('#confirmTitle').html('Deactivate Security Category');
                 $('#curr_element_id').val(post_id);
                 $('#action_button').val('deactivate');
-                var confirmText = "Are You sure want to deactivate this security category?";
+                var confirmText = "Are you sure want to deactivate this security category?";
                 $('#confirmText').html(confirmText);
                 $('#delete-element-confirm-modal').modal('show');
             });

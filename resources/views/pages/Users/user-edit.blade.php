@@ -18,20 +18,18 @@
                             <a class="url-nav" href="{{route('users')}}">
                                 <span>Users:</span>
                             </a>
-                            {{$user->user_name}} / Edit
+                            {{$user['user_name']}} / Edit
                         </h4>
-                        <form class="form-sample" id="postForm" name="postForm">
-                            <input type="hidden" name="creation_date" id="creation_date" value="">
-                            <input type="hidden" name="creator" id="creator" value="">
-                            <input type="hidden" name="post_id" id="post_id" value="{{$user->user_id}}">
+                        <form class="form-sample" id="edit-user-form" name="edit-user-form">
+                            <input type="hidden" name="user_id" id="user_id" value="{{$user['user_id']}}">
                             <br>
                             <div class="row">
                                 <div class="col-md-6">
                                     <div class="form-group col">
                                         <label>Name</label>
                                         <div class="col-sm-12">
-                                            <input type="text" id="name" name="name" placeholder="enter name"
-                                                   required="" value="{{$user->user_name}}"/>
+                                            <input type="text" id="user_name" name="user_name" placeholder="enter name"
+                                                   required="" value="{{$user['user_name']}}"/>
                                         </div>
                                     </div>
                                 </div>
@@ -40,28 +38,7 @@
                                         <label>Email</label>
                                         <div class="col-sm-12">
                                             <input type="email" id="email" name="email" placeholder="enter email"
-                                                   required="" value="{{$user->email}}"/>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="row" style="display:none">
-                                <div class="col-md-6">
-                                    <div class="form-group col">
-                                        <label>Password</label>
-                                        <div class="col-sm-12">
-                                            <input type="password" id="password" name="password"
-                                                   placeholder="enter password" required=""
-                                                   value="{{$user->password}}"/>
-                                        </div>
-                                    </div>
-                                </div>
-                                <div class="col-md-6">
-                                    <div class="form-group col">
-                                        <label>Confirm Password</label>
-                                        <div class="col-sm-12">
-                                            <input type="password" id="confirm_password" name="confirm_password"
-                                                   placeholder="confirm password" required=""/>
+                                                   required="" value="{{$user['email']}}"/>
                                         </div>
                                     </div>
                                 </div>
@@ -71,13 +48,13 @@
                                     <div class="form-group col">
                                         <label>Role</label>
                                         <div class="col-sm-12">
-                                            <select id="role" name="role" value="" required="">
+                                            <select id="role_id" name="role_id" required="">
                                                 @foreach ($roles as $role)
-                                                    <option value="{{ $role->key }}"
-                                                            @if ($role->key == $user->role_id)
+                                                    <option value="{{ $role['id'] }}"
+                                                            @if ($role['id'] == $user['role_id'])
                                                             selected="selected"
                                                         @endif
-                                                    >{{ $role->value }}</option>
+                                                    >{{ $role['name'] }}</option>
                                                 @endforeach
                                             </select>
                                         </div>
@@ -124,39 +101,41 @@
                     'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
                 }
             });
-
-            $('#add-new-post').click(function () {
-                $('#btn-save').val("create-post");
-                $('#post_id').val('');
-                $('#postForm').trigger("reset");
-                $('#postCrudModal').html("Add New Contact");
-                $('#ajax-crud-modal').modal('show');
-            });
         });
 
-        if ($("#postForm").length > 0) {
-            $("#postForm").validate({
+        if ($("#edit-user-form").length > 0) {
+            $("#edit-user-form").validate({
                 submitHandler: function (form) {
                     $('#btn-save').html('Sending..');
                     $('#loader-modal').modal('show');
+                    var url = "{{ route('userUpdate') }}";
+
                     $.ajax({
-                        data: $('#postForm').serialize(),
-                        url: "{{ route('userController.store') }}",
+                        data: $('#edit-user-form').serialize(),
+                        url: url,
                         type: "POST",
                         dataType: 'json',
                         success: function (data) {
                             $('#loader-modal').modal('hide');
-                            $('#postForm').trigger("reset");
-                            $('#ajax-crud-modal').modal('hide');
-                            $('#btn-save').html('Add successfully');
-                            window.location.href = "{{ route('users')}}";
+                            if(data['errCode']==1){
+                                $('#edit-user-form').trigger("reset");
+                                $('#loader-modal').modal('hide');
+                                window.location.href = "{{ route('users')}}";
+                            }
+                            else{
+                                $('#loader-modal').modal('hide');
+                                $('#errorText').html(data['errMsg']);
+                                $('#error-pop-up-modal').modal('show');
+                            }
                         },
                         error: function (data) {
+                            $('#edit-user-form').trigger("reset");
                             $('#loader-modal').modal('hide');
-                            console.log('Error:', data);
-                            $('#btn-save').html('Save Changes');
+                            $('#errorText').html(data['errMsg']);
+                            $('#error-pop-up-modal').modal('show');
                         }
                     });
+                    $('#btn-save').html('Save');
                 }
             })
         }

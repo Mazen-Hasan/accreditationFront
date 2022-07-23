@@ -2,13 +2,6 @@
 @section('subtitle',' Role Permissions')
 @section('style')
     <meta name="csrf-token" content="{{ csrf_token() }}">
-    <link rel="stylesheet" href="{{ URL::asset('css/dataTable.css') }}">
-
-    <script src="{{ URL::asset('js/dataTable.js') }}"></script>
-
-    <style>
-
-    </style>
 @endsection
 @section('content')
     <div class="content-wrapper">
@@ -24,7 +17,7 @@
                             </a>
                             {{$role_name}} / Permissions
                         </h4>
-                        <form class="form-horizontal" id="postForm" name="postForm">
+                        <form class="form-horizontal" id="permissions-form" name="permissions-form">
                             <input type="hidden" name="role" id="h_role_id" value="{{$role_id}}">
                             <input type="hidden" name="permissions" id="permissions" value="{{$permissions}}">
                             <div class="card" style="border-radius: 20px; margin-top:20px" id="event-type-container">
@@ -310,6 +303,7 @@
         </div>
     </div>
 
+    <!-- loader modal -->
     <div class="modal" id="loader-modal" tabindex="-1" data-backdrop="static" data-keyboard="false"
          role="dialog" aria-hidden="true">
         <div class="modal-dialog" role="document" style="width: 250px">
@@ -330,20 +324,23 @@
         </div>
     </div>
 
+    <!-- error modal -->
     <div class="modal fade" id="error-pop-up-modal" tabindex="-1" data-bs-backdrop="static"
          data-bs-keyboard="false" role="dialog" aria-hidden="true">
         <div class="modal-dialog" role="document">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title" id="errorTitle"></h5>
+                    <h5 class="modal-title" id="errorTitle">Error</h5>
                 </div>
                 <div class="modal-body">
                     <div>
+                        <input type="hidden" id="err-code" value="{{$errCode}}">
+                        <input type="hidden" id="err-msg" value="{{$errMsg}}">
                         <label class="col-sm-12 confirm-text" id="errorText"></label>
                     </div>
                     <div class="modal-footer">
                         <div class="col-sm-12">
-                            <button type="submit" class="btn-cancel" data-dismiss="modal" value="create">OK
+                            <button type="submit" class="btn-cancel" data-dismiss="modal">OK
                             </button>
                         </div>
                     </div>
@@ -354,8 +351,10 @@
 @endsection
 @section('script')
     <script>
-        var perm_array = [];
-        // var myJSON = '[{"id":"1", "slug":"event-add", "pre":0},{"id":"2", "slug":"event-edit", "pre":1},{"id":"3", "slug":"event-view", "pre":1},{"id":"4", "slug":"event-complete", "pre":1},{"id":"5", "slug":"event-admin-list", "pre":0}]';
+        if ($('#err-code').val() !== '1') {
+            $('#errorText').html($('#err-msg').val());
+            $('#error-pop-up-modal').modal('show');
+        }
         var myJSON = $('#permissions').val();
         var permissions_list = JSON.parse(myJSON);
         $(document).ready(function () {
@@ -394,7 +393,6 @@
                 $(this).removeClass('fas fa-plus');
                 $(this).addClass('fas fa-minus');
             }
-            //alert(action);
         });
 
 
@@ -412,7 +410,7 @@
             formData.append('permission_ids', permission_ids);
 
             $.ajax({
-                url: "{{ route('updateRolePermissions') }}",
+                url: "{{ route('rolePermissionsUpdate') }}",
                 type: 'POST',
                 data: formData,
                 cache: false,
@@ -420,21 +418,19 @@
                 processData: false,
                 success: function (data) {
                     if(data['errCode']==1){
-                        $('#postForm').trigger("reset");
+                        $('#permissions-form').trigger("reset");
                         $('#loader-modal').modal('hide');
                         $('#btn-save').html('Done');
                         window.location.href = "{{ route('roles')}}";
                     }
                     else{
                         $('#loader-modal').modal('hide');
-                        $('#errorTitle').html('Error');
                         $('#errorText').html(data['errMsg']);
                         $('#error-pop-up-modal').modal('show');
                     }
                 },
                 error: function (data) {
                     $('#loader-modal').modal('hide');
-                    $('#errorTitle').html('Error');
                     $('#errorText').html(data['errMsg']);
                     $('#error-pop-up-modal').modal('show');
                 }

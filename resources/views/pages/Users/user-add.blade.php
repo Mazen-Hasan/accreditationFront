@@ -19,9 +19,7 @@
                                 <span>Users:</span>
                             </a>
                             / New</h4>
-                        <form class="form-sample" id="postForm" name="postForm">
-                            <input type="hidden" name="creation_date" id="creation_date" value="">
-                            <input type="hidden" name="creator" id="creator" value="">
+                        <form class="form-sample" id="user-new-form" name="user-new-form">
                             <input type="hidden" name="post_id" id="post_id">
                             <br>
                             <div class="row">
@@ -29,7 +27,7 @@
                                     <div class="form-group col">
                                         <label>Name</label>
                                         <div class="col-sm-12">
-                                            <input type="text" id="name" name="name" placeholder="enter name"
+                                            <input type="text" id="user_name" name="user_name" placeholder="enter name"
                                                    required=""/>
                                         </div>
                                     </div>
@@ -81,13 +79,10 @@
                                     <div class="form-group col">
                                         <label>Role</label>
                                         <div class="col-sm-12">
-                                            <select id="role" name="role" required="">
+                                            <select id="role_id" name="role_id" required="">
                                                 @foreach ($roles as $role)
-                                                    <option value="{{ $role->key }}"
-                                                            @if ($role->key == 1)
-                                                            selected="selected"
-                                                        @endif
-                                                    >{{ $role->value }}</option>
+                                                    <option value="{{ $role['id'] }}"
+                                                    >{{ $role['name'] }}</option>
                                                 @endforeach
                                             </select>
                                         </div>
@@ -136,13 +131,6 @@
                 }
             });
 
-            $('#add-new-post').click(function () {
-                $('#btn-save').val("create-post");
-                $('#post_id').val('');
-                $('#postForm').trigger("reset");
-                $('#postCrudModal').html("Add New Contact");
-            });
-
             $('#togglePassword').click(function () {
                 var type = $('#password').attr('type') === 'password' ? 'text' : 'password';
                 $('#password').attr('type', type);
@@ -168,8 +156,8 @@
             });
         });
 
-        if ($("#postForm").length > 0) {
-            $("#postForm").validate({
+        if ($("#user-new-form").length > 0) {
+            $("#user-new-form").validate({
 
                 rules: {
                     confirm_password: {
@@ -184,26 +172,34 @@
                 },
 
                 submitHandler: function (form) {
-                    $('#loader-modal').modal('show');
-                    $('#post_id').val('');
-                    var actionType = $('#btn-save').val();
                     $('#btn-save').html('Sending..');
+                    $('#loader-modal').modal('show');
+
                     $.ajax({
-                        data: $('#postForm').serialize(),
-                        url: "{{ route('userController.store') }}",
+                        data: $('#user-new-form').serialize(),
+                        url: "{{ route('userSave') }}",
                         type: "POST",
                         dataType: 'json',
                         success: function (data) {
+                            $('#event-new-form').trigger("reset");
                             $('#loader-modal').modal('hide');
-                            $('#postForm').trigger("reset");
-                            window.location.href = "{{ route('users')}}";
+                            if (data['errCode'] == '1') {
+                                window.location.href = "{{ route('users')}}";
+                            } else {
+                                $('#loader-modal').modal('hide');
+                                $('#errorText').html(data['errMsg']);
+                                $('#error-pop-up-modal').modal('show');
+                            }
+
                         },
                         error: function (data) {
                             $('#loader-modal').modal('hide');
-                            console.log('Error:', data);
-                            $('#btn-save').html('Save Changes');
+                            $('#errorText').html(data['errMsg']);
+                            $('#error-pop-up-modal').modal('show');
+
                         }
                     });
+                    $('#btn-save').html('Save');
                 }
             })
         }

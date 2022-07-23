@@ -37,7 +37,7 @@
                                     </i>
                                 </a>
                                 <span class="dt-hbtn"></span>
-                                <a href="javascript:void(0)" id="add-new-post" class="add-hbtn" title="Add">
+                                <a href="javascript:void(0)" id="add-new-role" class="add-hbtn" title="Add">
                                     <i>
                                         <img src="{{ asset('images/add.png') }}" alt="Add">
                                     </i>
@@ -54,8 +54,6 @@
                                     <th>Action</th>
                                 </tr>
                                 </thead>
-                                <!-- <tbody>
-                                </tbody> -->
                             </table>
                         </div>
                     </div>
@@ -63,19 +61,21 @@
             </div>
         </div>
     </div>
-    <div class="modal fade" id="ajax-crud-modal" aria-hidden="true">
+
+    <div class="modal fade" id="role-modal" aria-hidden="true">
         <div class="modal-dialog">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h4 class="modal-title" id="postCrudModal"></h4>
+                    <h4 class="modal-title" id="modal-title"></h4>
                 </div>
                 <div class="modal-body">
-                    <form id="postForm" name="postForm" class="form-horizontal">
-                        <input type="hidden" name="post_id" id="post_id">
+                    <form id="role-form" name="role-form" class="form-horizontal">
+                        <input type="hidden" name="role_id" id="role_id">
+                        <input type="hidden" id="mode" value="new">
                         <div class="form-group">
-                            <label for="name">Role</label>
+                            <label for="role_name">Role</label>
                             <div class="col-sm-12">
-                                <input type="text" id="name" minlength="1" maxlength="30" name="name" placeholder="enter name" required="">
+                                <input type="text" id="role_name" minlength="1" maxlength="30" name="role_name" placeholder="enter role name" required="">
                             </div>
                         </div>
 
@@ -93,7 +93,7 @@
                             <p id="error" style="margin-left: 30px;margin-bottom: 10px;color: red;"></p>
                         </div>
                         <div class="col-sm-12">
-                            <button type="submit" id="btn-save" value="create">Save
+                            <button type="submit" id="btn-save">Save
                             </button>
                         </div>
                     </form>
@@ -104,7 +104,8 @@
             </div>
         </div>
     </div>
-    <div class="modal fade" id="delete-element-confirm-modal" tabindex="-1" data-bs-backdrop="static"
+
+    <div class="modal fade" id="role-confirm-modal" tabindex="-1" data-bs-backdrop="static"
          data-bs-keyboard="false" role="dialog" aria-hidden="true">
         <div class="modal-dialog" role="document">
             <div class="modal-content">
@@ -113,8 +114,8 @@
                 </div>
                 <div class="modal-body">
                     <div>
-                        <input type="hidden" id="curr_element_id">
-                        <input type="hidden" id="action_button">
+                        <input type="hidden" id="curr_role_id">
+                        <input type="hidden" id="mod_id">
                         <label class="col-sm-12 confirm-text" id="confirmText"></label>
                     </div>
 
@@ -132,6 +133,8 @@
             </div>
         </div>
     </div>
+
+    <!-- loader modal -->
     <div class="modal" id="loader-modal" tabindex="-1" data-backdrop="static" data-keyboard="false"
          role="dialog" aria-hidden="true">
         <div class="modal-dialog" role="document" style="width: 250px">
@@ -145,6 +148,29 @@
                             <label class="loading">
                                 loading...
                             </label>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- error modal -->
+    <div class="modal fade" id="error-pop-up-modal" tabindex="-1" data-bs-backdrop="static"
+         data-bs-keyboard="false" role="dialog" aria-hidden="true">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="errorTitle">Error</h5>
+                </div>
+                <div class="modal-body">
+                    <div>
+                        <label class="col-sm-12 confirm-text" id="errorText"></label>
+                    </div>
+                    <div class="modal-footer">
+                        <div class="col-sm-12">
+                            <button type="submit" class="btn-cancel" data-dismiss="modal" value="create">OK
+                            </button>
                         </div>
                     </div>
                 </div>
@@ -204,148 +230,156 @@
                 oTable.search(this.value).draw();
             });
 
-            $('#add-new-post').click(function () {
-                $('#btn-save').val("create-post");
-                $('#post_id').val('');
-                $('#name').val("");
-                $('#error').html("");
-                $form = $("#postForm");
-                $validator = $form.validate();
-                $validator.resetForm();
-                $('#status').val('default');
-                $('#postForm').trigger("reset");
-                $('#postCrudModal').html("New Event Type");
-                $('#ajax-crud-modal').modal('show');
+            $('#add-new-role').click(function () {
+                $('#mode').val('new');
+                $('#role_id').val('');
+                $('#role_name').val('');
+                $('#role-form').trigger("reset");
+                $('#modal-title').html("New Role");
+                $('#role-modal').modal('show');
             });
 
+            $('body').on('click', '#delete-role', function () {
+                var role_id = $(this).data("id");
+                $('#confirmTitle').html('Delete role');
+                $('#curr_role_id').val(role_id);
+                $('#mod_id').val('2');
+                var confirmText = 'Are you sure you want to delete this role?';
+                $('#confirmText').html(confirmText);
+                $('#role-confirm-modal').modal('show');
+            });
 
-            $('body').on('click', '#edit-type', function () {
-                var post_id = $(this).data('id');
-                $.get('eventTypeController/' + post_id + '/edit', function (data) {
-                    $('#name-error').hide();
-                    $('#email-error').hide();
-                    $('#error').html("");
-                    $('#postCrudModal').html("Edit Event Type");
-                    $('#btn-save').val("edit-post");
-                    $('#ajax-crud-modal').modal('show');
-                    $form = $("#postForm");
-                    $validator = $form.validate();
-                    $validator.resetForm();
-                    $('#post_id').val(data.id);
-                    $('#name').val(data.name);
-                    $('#status').val(data.status);
+            $('body').on('click', '#activate-role', function () {
+                var role_id = $(this).data("id");
+                $('#confirmTitle').html('Activate Role');
+                $('#curr_role_id').val(role_id);
+                $('#mod_id').val('1');
+                var confirmText = "Are you sure want to activate this role?";
+                $('#confirmText').html(confirmText);
+                $('#role-confirm-modal').modal('show');
+            });
+
+            $('body').on('click', '#deActivate-role', function () {
+                var role_id = $(this).data("id");
+                $('#confirmTitle').html('Deactivate Role');
+                $('#curr_role_id').val(role_id);
+                $('#mod_id').val('0');
+                var confirmText = "Are you sure want to deactivate this role?";
+                $('#confirmText').html(confirmText);
+                $('#role-confirm-modal').modal('show');
+            });
+
+            $('body').on('click', '#edit-role', function () {
+                $('#mode').val('edit');
+                var role_id = $(this).data('id');
+                $('#loader-modal').modal('show');
+
+                var url = "{{ route('roleGetById', ":role_id") }}";
+                url = url.replace(':role_id', role_id);
+
+                $.get( url, function (data) {
                 })
+                    .done(function (data) {
+                        $('#loader-modal').modal('hide');
+
+                        if (data['errCode'] == '1') {
+                            $('#modal-title').html("Edit Role");
+                            $('#role-modal').modal('show');
+                            $('#role_id').val(data['data']['id']);
+                            $('#role_name').val(data['data']['name']);
+                            $('#status').val(data['data']['status']);
+                        } else {
+                            $('#errorText').html(data['errMsg']);
+                            $('#error-pop-up-modal').modal('show');
+                        }
+                    })
+                    .fail(function (data) {
+                        $('#role-modal').modal('hide');
+                        $('#loader-modal').modal('hide');
+                    });
+                $('#btn-save').html('Save');
             });
 
-            $('body').on('click', '#activate-type', function () {
-                var post_id = $(this).data("id");
-                $('#confirmTitle').html('Activate Event Type');
-                $('#curr_element_id').val(post_id);
-                $('#action_button').val('activate');
-                var confirmText = "Are You sure want to activate ?!";
-                $('#confirmText').html(confirmText);
-                $('#delete-element-confirm-modal').modal('show');
-            });
-
-            $('body').on('click', '#deActivate-type', function () {
-                var post_id = $(this).data("id");
-                $('#confirmTitle').html('Deactivate Event Type');
-                $('#curr_element_id').val(post_id);
-                $('#action_button').val('deactivate');
-                var confirmText = "Are You sure want to deactivate ?!";
-                $('#confirmText').html(confirmText);
-                $('#delete-element-confirm-modal').modal('show');
-            });
-
-            $('#delete-element-confirm-modal button').on('click', function (event) {
+            $('#role-confirm-modal button').on('click', function (event) {
                 var $button = $(event.target);
                 $(this).closest('.modal').one('hidden.bs.modal', function () {
                     if ($button[0].id === 'btn-yes') {
-                        var post_id = $('#curr_element_id').val();
-                        var action_button = $('#action_button').val();
-                        if (action_button == 'delete') {
-                            $('#loader-modal').modal('show');
-                            $.ajax({
-                                type: "get",
-                                url: "RoleController/destroy/" + post_id,
-                                success: function (data) {
-                                    $('#loader-modal').modal('hide');
+                        $('#loader-modal').modal('show');
+                        var role_id = $('#curr_role_id').val();
+                        var mode_id = $('#mod_id').val();
+                        var url ='';
+                        if (mode_id === '0' || mode_id === '1'){
+                            url = "{{ route('roleChangeStatus', [':role_id',':status_id']) }}";
+                            url = url.replace(':role_id', role_id);
+                            url = url.replace(':status_id', mode_id);
+                        }
+                        else{
+                            url = "{{ route('roleDelete', ':role_id') }}";
+                            url = url.replace(':role_id', role_id);
+                        }
+
+                        $.ajax({
+                            type: "get",
+                            url: url,
+                            success: function (data) {
+                                $('#loader-modal').modal('hide');
+                                if (data['errCode'] == '1') {
                                     var oTable = $('#laravel_datatable').dataTable();
                                     oTable.fnDraw(false);
-                                },
-                                error: function (data) {
-                                    $('#loader-modal').modal('hide');
-                                    console.log('Error:', data);
+                                } else {
+                                    $('#errorText').html(data['errMsg']);
+                                    $('#error-pop-up-modal').modal('show');
                                 }
-                            });
-                        }
-                        if (action_button == 'activate') {
-                            $('#loader-modal').modal('show');
-                            $.ajax({
-                                type: "get",
-                                url: "RoleController/changeStatus/" + post_id + "/1",
-                                success: function (data) {
-                                    $('#loader-modal').modal('hide');
-                                    var oTable = $('#laravel_datatable').dataTable();
-                                    oTable.fnDraw(false);
-                                },
-                                error: function (data) {
-                                    $('#loader-modal').modal('hide');
-                                    console.log('Error:', data);
-                                }
-                            });
-                        }
-                        if (action_button == 'deactivate') {
-                            $('#loader-modal').modal('show');
-                            $.ajax({
-                                type: "get",
-                                url: "RoleController/changeStatus/" + post_id + "/0",
-                                success: function (data) {
-                                    $('#loader-modal').modal('hide');
-                                    var oTable = $('#laravel_datatable').dataTable();
-                                    oTable.fnDraw(false);
-                                },
-                                error: function (data) {
-                                    $('#loader-modal').modal('hide');
-                                    console.log('Error:', data);
-                                }
-                            });
-                        }
+                            },
+                            error: function (data) {
+                                $('#loader-modal').modal('hide');
+                                $('#errorText').html(data['errMsg']);
+                                $('#error-pop-up-modal').modal('show');
+                            }
+                        });
                     }
                 });
             });
         });
 
-        if ($("#postForm").length > 0) {
-            $("#postForm").validate({
+        if ($("#role-form").length > 0) {
+            $("#role-form").validate({
                 rules: {
                     status: {valueNotEquals: "default"}
                 },
                 submitHandler: function (form) {
-                    $('#error').html("");
                     $('#btn-save').html('Sending..');
                     $('#loader-modal').modal('show');
+                    var url = "{{ route('roleCreate') }}";
+                    if($('#mode').val() === 'edit'){
+                        url = "{{ route('roleUpdate') }}";
+                    }
                     $.ajax({
-                        data: $('#postForm').serialize(),
-                        url: "{{ route('RoleController.store') }}",
+                        data: $('#role-form').serialize(),
+                        url: url,
                         type: "POST",
                         dataType: 'json',
                         success: function (data) {
                             $('#loader-modal').modal('hide');
-                            $('#postForm').trigger("reset");
-                            $('#ajax-crud-modal').modal('hide');
-                            $('#btn-save').html('Save Changes');
-                            var oTable = $('#laravel_datatable').dataTable();
-                            oTable.fnDraw(false);
+                            $('#role-form').trigger("reset");
+                            $('#role-modal').modal('hide');
+                            if(data['errCode']==1){
+                                var oTable = $('#laravel_datatable').dataTable();
+                                oTable.fnDraw(false);
+                            }
+                            else{
+                                $('#errorText').html(data['errMsg']);
+                                $('#error-pop-up-modal').modal('show');
+                            }
                         },
                         error: function (data) {
                             $('#loader-modal').modal('hide');
-                            console.log('Error:', data);
-                            $('#btn-save').html('Save');
-                            $('#error').html("Duplicate event type name");
-                            //$('#btn-save').html('Save Changes');
+                            $('#role-modal').modal('hide');
+                            $('#errorText').html(data['errMsg']);
+                            $('#error-pop-up-modal').modal('show');
                         }
                     });
+                    $('#btn-save').html('Save');
                 }
             })
         }

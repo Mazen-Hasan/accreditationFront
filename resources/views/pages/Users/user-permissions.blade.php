@@ -22,7 +22,7 @@
                             <a class="url-nav" href="{{route('users')}}">
                                 <span>Users:</span>
                             </a>
-                            {{$role_name}} / Permissions
+                            {{$user_name}} / Permissions
                         </h4>
                         <form class="form-horizontal" id="postForm" name="postForm">
                             <input type="hidden" name="role" id="h_user_id" value="{{$user_id}}">

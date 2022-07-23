@@ -250,9 +250,7 @@
 
                         if (data['errCode'] == '1') {
                             $('#template_id').val(template_id);
-                            $('#name-error').hide();
                             $('#modalTitle').html("Edit Registration Form");
-                            $('#btn-save').val("edit-template");
                             $('#template-modal').modal('show');
                             $('#name').val(data['data']['name']);
                             $('#status').val(data['data']['status']);

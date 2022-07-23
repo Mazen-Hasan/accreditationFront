@@ -422,7 +422,8 @@
                         },
                         error: function (data) {
                             $('#loader-modal').modal('hide');
-
+                            $('#errorText').html(data['errMsg']);
+                            $('#error-pop-up-modal').modal('show');
                         }
                     });
                     $('#btn-save').html('Save');

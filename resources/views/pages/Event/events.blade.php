@@ -31,7 +31,7 @@
                                 </a>
                                 <span class="dt-hbtn"></span>
                                 @role('super-admin')
-                                <a href="{{route('eventCreate')}}" id="add-new-post" class="add-hbtn" title="Add">
+                                <a href="{{route('eventCreate')}}" id="add-new-event" class="add-hbtn" title="Add">
                                     <i>
                                         <img src="{{ asset('images/add.png') }}" alt="Add">
                                     </i>
@@ -123,8 +123,8 @@
                     </form>
                     <hr>
 
-                    <form id="logoForm" name="logoForm" class="form-horizontal">
-                        <input style="visibility: hidden" name="eventId" id="eventId">
+                    <form id="logo-form" name="logo-form" class="form-horizontal">
+                        <input style="visibility: hidden" name="curr_event_id" id="curr_event_id">
                         <div class="form-group">
                             <div class="row"
                                  style="margin-left: 25%;justify-content: center; max-height: 100%; max-width: 50%; object-fit: fill">
@@ -132,10 +132,10 @@
                                      style="width:200px;height:200px;">
                             </div>
                         </div>
-                        <input style="visibility: hidden" type="text" name="logoName" id="logoName">
+                        <input style="visibility: hidden"  type="text" name="logo_name" id="logo_name">
                         <div class="modal-footer">
                             <div class="col-sm-12">
-                                <button type="submit" id="btn-save" value="create">Save
+                                <button type="submit" id="btn-save">Save
                                 </button>
                             </div>
                         </div>
@@ -145,6 +145,7 @@
         </div>
     </div>
 
+    <!-- loader modal -->
     <div class="modal" id="loader-modal" tabindex="-1" data-backdrop="static" data-keyboard="false"
          role="dialog" aria-hidden="true">
         <div class="modal-dialog" role="document" style="width: 250px">
@@ -158,6 +159,29 @@
                             <label class="loading">
                                 loading...
                             </label>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- error modal -->
+    <div class="modal fade" id="error-pop-up-modal" tabindex="-1" data-bs-backdrop="static"
+         data-bs-keyboard="false" role="dialog" aria-hidden="true">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="errorTitle">Error</h5>
+                </div>
+                <div class="modal-body">
+                    <div>
+                        <label class="col-sm-12 confirm-text" id="errorText"></label>
+                    </div>
+                    <div class="modal-footer">
+                        <div class="col-sm-12">
+                            <button type="submit" class="btn-cancel" data-dismiss="modal" value="create">OK
+                            </button>
                         </div>
                     </div>
                 </div>
@@ -251,7 +275,7 @@
                     const approval_option = params.data.approval_option;
                     const name = params.data.name;
 
-                    var url = "{{ route('EventController.show', [':event_id']) }}";
+                    var url = "{{ route('eventGetById', [':event_id']) }}";
                     url = url.replace(':event_id', event_id);
 
                     let $button = '<a href="' + url + '" data-toggle="tooltip"  id="event-details" data-id="' + event_id + '" data-original-title="Details" title="Details"><i class="far fa-list-alt"></i></a>';
@@ -299,7 +323,6 @@
                 }
             },
         ];
-
 
         // let the grid know which columns and what data to use
         const gridOptions = {
@@ -540,19 +563,12 @@
                 }
             });
 
-            $('#add-new-post').click(function () {
-                $('#btn-save').val("create-post");
-                $('#post_id').val('');
-                $('#postForm').trigger("reset");
-                $('#postCrudModal').html("Add New Post");
-            });
-
             $('body').on('click', '#edit-logo', function () {
                 $('#file').val('');
                 $("#file-progress-bar").width('0%');
                 $("#file_type_error").html('');
-                $("#logoName").val('');
-                $('#eventId').val($(this).data("id"));
+                $("#logo_name").val('');
+                $('#curr_event_id').val($(this).data("id"));
                 let eventName = $(this).data("name");
                 $('#modalTitle').html("Edit " + eventName + " Logo");
                 let imag = $(this).data("l");
@@ -648,7 +664,7 @@
                         $('#file_type_error').removeClass('error').addClass('info');
                         $("#file_type_error").html('File uploaded successfully');
                         $('#btn-upload').html('Upload');
-                        $("#logoName").val(data.data.fileName);
+                        $("#logo_name").val(data.data.fileName);
 
                         let imag = data.data.fileName;
                         // server
@@ -660,7 +676,6 @@
 
                     error: function (data) {
                         $("#file_type_error").html('Error uploading file');
-                        console.log(data);
                     }
                 });
             });
@@ -679,51 +694,65 @@
                 var $button = $(event.target);
                 $(this).closest('.modal').one('hidden.bs.modal', function () {
                     if ($button[0].id === 'btn-yes') {
-                        var eventId = $('#event_id').val();
-                        var url = "{{ route('eventComplete', [":eventId"]) }}";
-                        url = url.replace(':eventId', eventId);
                         $('#loader-modal').modal('show');
+
+                        var event_id = $('#event_id').val();
+                        var url = "{{ route('eventComplete', [":event_id"]) }}";
+                        url = url.replace(':event_id', event_id);
+
                         $.ajax({
                             type: "get",
                             url: url,
                             success: function (data) {
                                 $('#loader-modal').modal('hide');
-                                $('#filtersButton').click();
+                                if (data['errCode'] == '1') {
+                                    $('#filtersButton').click();
+                                } else {
+                                    $('#errorText').html(data['errMsg']);
+                                    $('#error-pop-up-modal').modal('show');
+                                }
                             },
                             error: function (data) {
                                 $('#loader-modal').modal('hide');
-                                console.log('Error:', data);
+                                $('#errorText').html(data['errMsg']);
+                                $('#error-pop-up-modal').modal('show');
                             }
                         });
                     }
                 });
             });
 
-            if ($("#logoForm").length > 0) {
-                $("#logoForm").validate({
-
+            if ($("#logo-form").length > 0) {
+                $("#logo-form").validate({
                     submitHandler: function (form) {
                         $('#btn-save').html('Sending..');
-                        var url = '{{ route('eventsData',[':showAll','0']) }}';
-                        url = url.replace(":showAll", $('#show-all').prop("checked"));
-
+                        $('#loader-modal').modal('show');
                         $.ajax({
-                            data: $('#logoForm').serialize(),
-                            url: "{{ route('updateLogo') }}",
+                            data: $('#logo-form').serialize(),
+                            url: "{{ route('changeLogo') }}",
                             type: "POST",
                             dataType: 'json',
 
                             success: function (data) {
-                                $('#logoForm').trigger("reset");
+                                console.log('changeLogo');
+                                $('#logo-form').trigger("reset");
+                                $('#loader-modal').modal('hide');
                                 $('#logo-modal').modal('hide');
-                                $('#btn-save').html('Save Changes');
-                                $('#filtersButton').click();
+                                if (data['errCode'] == '1') {
+                                    $('#filtersButton').click();
+                                } else {
+                                    $('#errorText').html(data['errMsg']);
+                                    $('#error-pop-up-modal').modal('show');
+                                }
                             },
                             error: function (data) {
-                                console.log('Error:', data);
-                                $('#btn-save').html('Save Changes');
+                                $('#loader-modal').modal('hide');
+                                $('#logo-modal').modal('hide');
+                                $('#errorText').html(data['errMsg']);
+                                $('#error-pop-up-modal').modal('show');
                             }
                         });
+                        $('#btn-save').html('Save');
                     }
                 })
             }

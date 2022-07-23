@@ -242,7 +242,7 @@
                 $('#confirmTitle').html('Activate Event Type');
                 $('#curr_element_id').val(post_id);
                 $('#action_button').val('activate');
-                var confirmText = "Are You sure want to activate ?!";
+                var confirmText = "Are you sure want to activate ?!";
                 $('#confirmText').html(confirmText);
                 $('#delete-element-confirm-modal').modal('show');
             });
@@ -252,7 +252,7 @@
                 $('#confirmTitle').html('Deactivate Event Type');
                 $('#curr_element_id').val(post_id);
                 $('#action_button').val('deactivate');
-                var confirmText = "Are You sure want to deactivate ?!";
+                var confirmText = "Are you sure want to deactivate ?!";
                 $('#confirmText').html(confirmText);
                 $('#delete-element-confirm-modal').modal('show');
             });

@@ -201,10 +201,10 @@
                 $('#confirmTitle').html('Delete Title');
                 $('#curr_element_id').val(post_id);
                 $('#action_button').val('delete');
-                var confirmText = 'Are You sure want to delete ?';
+                var confirmText = 'Are you sure want to delete ?';
                 $('#confirmText').html(confirmText);
                 $('#delete-element-confirm-modal').modal('show');
-                // confirm("Are You sure want to delete !");
+                // confirm("Are you sure want to delete !");
                 // $.ajax({
                 //     type: "get",
                 //     url: "titleController/destroy/"+post_id,
@@ -222,10 +222,10 @@
                 $('#confirmTitle').html('Activate Title');
                 $('#curr_element_id').val(post_id);
                 $('#action_button').val('activate');
-                var confirmText = "Are You sure want to activate ?!";
+                var confirmText = "Are you sure want to activate ?!";
                 $('#confirmText').html(confirmText);
                 $('#delete-element-confirm-modal').modal('show');
-                // confirm("Are You sure want to activate ?!");
+                // confirm("Are you sure want to activate ?!");
                 // $.ajax({
                 //     type: "get",
                 //     url: "titleController/changeStatus/"+post_id+"/1",
@@ -243,10 +243,10 @@
                 $('#confirmTitle').html('Deactivate Title');
                 $('#curr_element_id').val(post_id);
                 $('#action_button').val('deactivate');
-                var confirmText = "Are You sure want to deactivate ?!";
+                var confirmText = "Are you sure want to deactivate ?!";
                 $('#confirmText').html(confirmText);
                 $('#delete-element-confirm-modal').modal('show');
-                // confirm("Are You sure want to deActivate ?!");
+                // confirm("Are you sure want to deActivate ?!");
                 // $.ajax({
                 //     type: "get",
                 //     url: "titleController/changeStatus/"+post_id+"/0",
