@@ -471,38 +471,68 @@ class CompanyAdminController extends Controller
 
         $where = array('id' => $eventId);
         $event = Event::where($where)->get()->first();
-        $companyAccreditationCategories = DB::select('select * from event_company_accrediation_categories_view where company_id = ? and event_id = ?', [$company->id, $eventId]);
+//         $companyAccreditationCategories = DB::select('select * from event_company_accrediation_categories_view where company_id = ? and event_id = ?', [$company->id, $eventId]);
         $status = 0;
-        $remainingSize = $company->size;
-        foreach ($companyAccreditationCategories as $companyAccreditationCategory) {
-            $status = $companyAccreditationCategory->status;
-            $remainingSize = $remainingSize - $companyAccreditationCategory->size;
-        }
+//         $remainingSize = $company->size;
+//         foreach ($companyAccreditationCategories as $companyAccreditationCategory) {
+//             $status = $companyAccreditationCategory->status;
+//             $remainingSize = $remainingSize - $companyAccreditationCategory->size;
+//         }
 
-        $where = array('status' => 1);
-        $accreditationCategorysSelectOptions = array();
-//         $accreditationCategories = AccreditationCategory::where($where)->get()->all();
+//         $where = array('status' => 1);
+//         $accreditationCategorysSelectOptions = array();
+// //         $accreditationCategories = AccreditationCategory::where($where)->get()->all();
 
+// //         foreach ($accreditationCategories as $accreditationCategory) {
+// //             $accreditationCategorysSelectOption = new SelectOption($accreditationCategory->id, $accreditationCategory->name);
+// //             $accreditationCategorysSelectOptions[] = $accreditationCategorysSelectOption;
+// //         }
+//         $accreditationCategories = DB::select('select * from event_accreditation_categories_view where event_id = ?',[$eventId]);
 //         foreach ($accreditationCategories as $accreditationCategory) {
-//             $accreditationCategorysSelectOption = new SelectOption($accreditationCategory->id, $accreditationCategory->name);
+//             $accreditationCategorysSelectOption = new SelectOption($accreditationCategory->accreditation_category_id, $accreditationCategory->name);
 //             $accreditationCategorysSelectOptions[] = $accreditationCategorysSelectOption;
 //         }
-        $accreditationCategories = DB::select('select * from event_accreditation_categories_view where event_id = ?',[$eventId]);
+
+
+        $body = [
+            'event_id' => $eventId
+        ];
+        $result = CallAPI::postAPI('company/accreditationCategory/getList',$body);
+        $errCode = $result['errCode'];
+        $errMsg = $result['errMsg'];
+        $data = $result['data'];
+        $data = json_decode(json_encode($data));
+        //$cities = DB::select('select * from cities c where c.country_id = ? ',[$countrytId]);
+        $accreditationCategories = $data->data;
+        //var_dump($data->data);
+        $accreditationCategorysSelectOptions = array();
         foreach ($accreditationCategories as $accreditationCategory) {
-            $accreditationCategorysSelectOption = new SelectOption($accreditationCategory->accreditation_category_id, $accreditationCategory->name);
+            $accreditationCategorysSelectOption = new SelectOption($accreditationCategory->accreditation_category_id, $accreditationCategory->accreditation_category_name);
             $accreditationCategorysSelectOptions[] = $accreditationCategorysSelectOption;
         }
 
         if (request()->ajax()) {
-            $companyAccreditationCategories = DB::select('select * from event_company_accrediation_categories_view where company_id = ? and event_id = ?', [$companyId, $eventId]);
-            $companyAccreditationCategoriesStatuss = DB::select('select * from event_company_accrediation_categories_view where company_id = ? and event_id = ?', [$companyId, $eventId]);
+            // $companyAccreditationCategories = DB::select('select * from event_company_accrediation_categories_view where company_id = ? and event_id = ?', [$companyId, $eventId]);
+            // $companyAccreditationCategoriesStatuss = DB::select('select * from event_company_accrediation_categories_view where company_id = ? and event_id = ?', [$companyId, $eventId]);
+            // $status = 0;
+            // foreach ($companyAccreditationCategoriesStatuss as $companyAccreditationCategoriesStatus) {
+            //     $status = $companyAccreditationCategoriesStatus->status;
+            // }
+            $body = [
+                'event_id' => $eventId,
+                'company_id' => $companyId
+            ];
+            $result = CallAPI::postAPI('company/accreditationCategory/getAll',$body);
+            $errCode = $result['errCode'];
+            $errMsg = $result['errMsg'];
+            $data = $result['data'];
+            $data = json_decode(json_encode($data));
             $status = 0;
-            foreach ($companyAccreditationCategoriesStatuss as $companyAccreditationCategoriesStatus) {
-                $status = $companyAccreditationCategoriesStatus->status;
+            if(sizeof($data->data) > 0){
+                $status = $data->data[0]->status;  
             }
-            // $status = 1;
             if ($status == 0) {
-                return datatables()->of($companyAccreditationCategories)
+                return datatables()->of($data->data)
                     ->addColumn('action', function ($data) use($event) {
                         $button = '';
                         if($event->status < 3){
@@ -516,7 +546,7 @@ class CompanyAdminController extends Controller
                     ->make(true);
             } else {
                 if ($status == 1) {
-                    return datatables()->of($companyAccreditationCategories)
+                    return datatables()->of($data->data)
                         ->addColumn('action', function ($data) {
                             $button = 'Waiting for approval';
                             return $button;
@@ -524,7 +554,7 @@ class CompanyAdminController extends Controller
                         ->rawColumns(['action'])
                         ->make(true);
                 } else {
-                    return datatables()->of($companyAccreditationCategories)
+                    return datatables()->of($data->data)
                         ->addColumn('action', function ($data) {
                             $button = 'Approved';
                             return $button;
@@ -538,7 +568,7 @@ class CompanyAdminController extends Controller
         if($company->parent_id != null){
             $subCompany_nav = 0;
         }
-        return view('pages.CompanyAdmin.company-accreditation-size')->with('accreditationCategorys', $accreditationCategorysSelectOptions)->with('companyId', $company->id)->with('eventId', $eventId)->with('status', $status)->with('event_name', $event->name)->with('company_name', $company->name)->with('company_size', $company->size)->with('remaining_size', $remainingSize)->with('subCompany_nav', $subCompany_nav)->with('event_status',$event->status);
+        return view('pages.CompanyAdmin.company-accreditation-size')->with('accreditationCategorys', $accreditationCategorysSelectOptions)->with('companyId', $company->id)->with('eventId', $eventId)->with('status', $status)->with('event_name', $event->name)->with('company_name', $company->name)->with('company_size', $company->size)->with('remaining_size', '1000')->with('subCompany_nav', $subCompany_nav)->with('event_status',$event->status);
     }
 
     public function editCompanyAccreditSize($id)
@@ -552,51 +582,99 @@ class CompanyAdminController extends Controller
     public function storeCompanyAccrCatSize($id, $accredit_cat_id, $size, $company_id, $event_id)
     {
 
-        $where = array('company_id'=>$company_id, 'event_id' => $event_id);
-        $eventcompnay = EventCompany::where($where)->first();
-    	$status = 0;
-    	if($eventcompnay->parent_id != null){
-        	$status = 2;
-        }
-        try {
-            $post = CompanyAccreditaionCategory::updateOrCreate(['id' => $id],
-                ['size' => $size,
-                 	'event_company_id' => $eventcompnay->id,
-                    'accredit_cat_id' => $accredit_cat_id,
-                    'company_id' => $company_id,
-                    'subcompany_id' => $company_id,
-                    'event_id' => $event_id,
-                    'status' => $status
-                ]);
+        // $where = array('company_id'=>$company_id, 'event_id' => $event_id);
+        // $eventcompnay = EventCompany::where($where)->first();
+    	// $status = 0;
+    	// if($eventcompnay->parent_id != null){
+        // 	$status = 2;
+        // }
+        // try {
+        //     $post = CompanyAccreditaionCategory::updateOrCreate(['id' => $id],
+        //         ['size' => $size,
+        //          	'event_company_id' => $eventcompnay->id,
+        //             'accredit_cat_id' => $accredit_cat_id,
+        //             'company_id' => $company_id,
+        //             'subcompany_id' => $company_id,
+        //             'event_id' => $event_id,
+        //             'status' => $status
+        //         ]);
 
-        } catch (\Exception $e) {
-            return Response::json(array(
-                'code' => 400,
-                'message' => $e->getMessage()
-            ), 400);
+        // } catch (\Exception $e) {
+        //     return Response::json(array(
+        //         'code' => 400,
+        //         'message' => $e->getMessage()
+        //     ), 400);
+        // }
+        // return Response::json($post);
+
+        if($id != 0){
+            $body = [
+                "company_accreditation_category_id"=> $id,
+                "size"=> $size
+            ];
+            $result = CallAPI::postAPI('company/accreditationCategory/edit',$body);
+            $errCode = $result['errCode'];
+            $errMsg = $result['errMsg'];
+            $data = $result['data'];
+            $data = json_decode(json_encode($data));
+        }else{
+            $body = [
+                "event_id"=> $event_id,
+                "company_id"=> $company_id,
+                "accreditation_category_id"=> $accredit_cat_id,
+                "size"=> $size,
+                "status" => 0
+            ];
+            $result = CallAPI::postAPI('company/accreditationCategory/add',$body);
+            $errCode = $result['errCode'];
+            $errMsg = $result['errMsg'];
+            $data = $result['data'];
+            $data = json_decode(json_encode($data));
         }
-        return Response::json($post);
+        return Response::json($data);
     }
 
     public function destroyCompanyAccreditCat($id)
     {
-        $post = CompanyAccreditaionCategory::where('id', $id)->delete();
-        return Response::json($post);
+        $body = [
+            'company_accreditation_category_id' => $id
+        ];
+        $result = CallAPI::postAPI('company/accreditationCategory/remove',$body);
+        $errCode = $result['errCode'];
+        $errMsg = $result['errMsg'];
+        $data = $result['data'];
+        $data = json_decode(json_encode($data));
+        return Response::json($data);
+        // $post = CompanyAccreditaionCategory::where('id', $id)->delete();
+        // // return Response::json($post);
+        // $post = CompanyAccreditaionCategory::where('id', $id)->delete();
+        // return Response::json($post);
 
     }
 
     public function sendApproval($companyId, $eventId)
-    {
-        $event = Event::where(['id'=>$eventId])->first();
-        $company = Company::where(['id'=>$companyId])->first();
-        $where = array('company_id' => $companyId, 'event_id' => $eventId);
-        $companyAccreditCategories = CompanyAccreditaionCategory::where($where)
-            ->update(['status' => 1]);
-        $event_admins = DB::select('select * from event_admins_view e where e.id=?',[$eventId]);
-        foreach ($event_admins as $event_admin){
-            NotificationController::sendAlertNotification($event_admin->event_admin, 'sendApproval', $event->name . ': ' . $company->name . ': ' . 'Accreditation Categories Size approval', Route('companyAccreditCat', [$companyId, $eventId]));
-        }
-        return Response::json($companyAccreditCategories);
+    {   
+        $body = [
+            'event_id' => $eventId,
+            'company_id' => $companyId
+        ];
+        $result = CallAPI::postAPI('company/accreditationCategory/sendForApproval',$body);
+        $errCode = $result['errCode'];
+        $errMsg = $result['errMsg'];
+        $data = $result['data'];
+        $data = json_decode(json_encode($data));
+        return Response::json($data);
+
+        // $event = Event::where(['id'=>$eventId])->first();
+        // $company = Company::where(['id'=>$companyId])->first();
+        // $where = array('company_id' => $companyId, 'event_id' => $eventId);
+        // $companyAccreditCategories = CompanyAccreditaionCategory::where($where)
+        //     ->update(['status' => 1]);
+        // $event_admins = DB::select('select * from event_admins_view e where e.id=?',[$eventId]);
+        // foreach ($event_admins as $event_admin){
+        //     NotificationController::sendAlertNotification($event_admin->event_admin, 'sendApproval', $event->name . ': ' . $company->name . ': ' . 'Accreditation Categories Size approval', Route('companyAccreditCat', [$companyId, $eventId]));
+        // }
+        // return Response::json($companyAccreditCategories);
 
     }
 
@@ -1151,17 +1229,17 @@ class CompanyAdminController extends Controller
     public function subCompanyAccreditCategories($companyId, $eventId)
     {
         $addable = 1;
-        $companyParents = EventCompany::where(['company_id'=>$companyId,'event_id'=>$eventId])->get()->all();
-        foreach($companyParents as $companyParent){
-            $parentId = $companyParent->parent_id;
-        }
-        $parentAcredititationCategories = CompanyAccreditaionCategory::where(['company_id'=> $parentId,'event_id'=>$eventId])->get()->all();
-        foreach($parentAcredititationCategories as $parentAcredititationCategory){
-            $parentAcredititationCategorystatus = $parentAcredititationCategory->status;
-            if($parentAcredititationCategorystatus != 2){
-                $addable = 0;
-            }
-        }
+        // $companyParents = EventCompany::where(['company_id'=>$companyId,'event_id'=>$eventId])->get()->all();
+        // foreach($companyParents as $companyParent){
+        //     $parentId = $companyParent->parent_id;
+        // }
+        // $parentAcredititationCategories = CompanyAccreditaionCategory::where(['company_id'=> $parentId,'event_id'=>$eventId])->get()->all();
+        // foreach($parentAcredititationCategories as $parentAcredititationCategory){
+        //     $parentAcredititationCategorystatus = $parentAcredititationCategory->status;
+        //     if($parentAcredititationCategorystatus != 2){
+        //         $addable = 0;
+        //     }
+        // }
 
         $companies = DB::select('select * from companies_view where id = ? and event_id = ?', [$companyId,$eventId]);
         foreach($companies as $company1){
@@ -1170,15 +1248,16 @@ class CompanyAdminController extends Controller
 
         $where = array('id' => $eventId);
         $event = Event::where($where)->get()->first();
-        $companyAccreditationCategories = DB::select('select * from event_company_accrediation_categories_view where company_id = ? and event_id = ?', [$company->id, $eventId]);
+        // $companyAccreditationCategories = DB::select('select * from event_company_accrediation_categories_view where company_id = ? and event_id = ?', [$company->id, $eventId]);
         $status = 0;
-        $remainingSize = $company->size;
-        foreach ($companyAccreditationCategories as $companyAccreditationCategory) {
-            $status = $companyAccreditationCategory->status;
-            $remainingSize = $remainingSize - $companyAccreditationCategory->size;
-        }
+        // $remainingSize = $company->size;
+        $remainingSize = 1000;
+        // foreach ($companyAccreditationCategories as $companyAccreditationCategory) {
+        //     $status = $companyAccreditationCategory->status;
+        //     $remainingSize = $remainingSize - $companyAccreditationCategory->size;
+        // }
 
-        $where = array('status' => 1);
+        // $where = array('status' => 1);
         $accreditationCategorysSelectOptions = array();
 //         $accreditationCategories = AccreditationCategory::where($where)->get()->all();
 
@@ -1186,21 +1265,40 @@ class CompanyAdminController extends Controller
 //             $accreditationCategorysSelectOption = new SelectOption($accreditationCategory->id, $accreditationCategory->name);
 //             $accreditationCategorysSelectOptions[] = $accreditationCategorysSelectOption;
 //         }
-        $accreditationCategories = DB::select('select * from event_accreditation_categories_view where event_id = ?',[$eventId]);
+        $body = [
+            'event_id' => $eventId
+        ];
+        $result = CallAPI::postAPI('company/subsidiary/accreditationCategory/getList',$body);
+        $errCode = $result['errCode'];
+        $errMsg = $result['errMsg'];
+        $data = $result['data'];
+        $data = json_decode(json_encode($data));
+        //$cities = DB::select('select * from cities c where c.country_id = ? ',[$countrytId]);
+        $accreditationCategories = $data->data;
+        //$accreditationCategories = DB::select('select * from event_accreditation_categories_view where event_id = ?',[$eventId]);
         foreach ($accreditationCategories as $accreditationCategory) {
-            $accreditationCategorysSelectOption = new SelectOption($accreditationCategory->accreditation_category_id, $accreditationCategory->name);
+            $accreditationCategorysSelectOption = new SelectOption($accreditationCategory->accreditation_category_id, $accreditationCategory->accreditation_category_name);
             $accreditationCategorysSelectOptions[] = $accreditationCategorysSelectOption;
         }
 
         if (request()->ajax()) {
-            $companyAccreditationCategories = DB::select('select * from event_company_accrediation_categories_view where company_id = ? and event_id = ?', [$companyId, $eventId]);
-            $companyAccreditationCategoriesStatuss = DB::select('select * from event_company_accrediation_categories_view where company_id = ? and event_id = ?', [$companyId, $eventId]);
-            $status = 1;
-            foreach ($companyAccreditationCategoriesStatuss as $companyAccreditationCategoriesStatus) {
-                $status = $companyAccreditationCategoriesStatus->status;
-            }
+            // $companyAccreditationCategories = DB::select('select * from event_company_accrediation_categories_view where company_id = ? and event_id = ?', [$companyId, $eventId]);
+            // $companyAccreditationCategoriesStatuss = DB::select('select * from event_company_accrediation_categories_view where company_id = ? and event_id = ?', [$companyId, $eventId]);
+            // $status = 1;
+            // foreach ($companyAccreditationCategoriesStatuss as $companyAccreditationCategoriesStatus) {
+            //     $status = $companyAccreditationCategoriesStatus->status;
+            // }
+            $body = [
+                'event_id' => $eventId,
+                'company_id' => $companyId
+            ];
+            $result = CallAPI::postAPI('company/subsidiary/accreditationCategory/getAll',$body);
+            $errCode = $result['errCode'];
+            $errMsg = $result['errMsg'];
+            $data = $result['data'];
+            $data = json_decode(json_encode($data));
             //if ($status == 0) {
-                return datatables()->of($companyAccreditationCategories)
+                return datatables()->of($data->data)
                     ->addColumn('action', function ($data) use ($event) {
                         $button = "";
                         if($event->status < 3){
@@ -1233,10 +1331,10 @@ class CompanyAdminController extends Controller
             // }
         }
         $subCompany_nav = 1;
-        if($company->parent_id != null){
-            $subCompany_nav = 0;
-        }
-        return view('pages.CompanyAdmin.subCompany-accreditation-size')->with('accreditationCategorys', $accreditationCategorysSelectOptions)->with('companyId', $company->id)->with('eventId', $eventId)->with('status', $status)->with('event_name', $event->name)->with('company_name', $company->name)->with('company_size', $company->size)->with('remaining_size', $remainingSize)->with('subCompany_nav',$subCompany_nav)->with('company_parent',$company->parent_id)->with('event_status',$event->status)->with('addable',$addable);
+        // if($company->parent_id != null){
+        //     $subCompany_nav = 0;
+        // }
+        return view('pages.CompanyAdmin.subCompany-accreditation-size')->with('accreditationCategorys', $accreditationCategorysSelectOptions)->with('companyId', $companyId)->with('eventId', $eventId)->with('status', $status)->with('event_name', $event->name)->with('company_name', $company->name)->with('company_size', $company->size)->with('remaining_size', $remainingSize)->with('subCompany_nav',$subCompany_nav)->with('company_parent',$company->parent_id)->with('event_status',$event->status)->with('addable',$addable);
     }
 
     // public function Invite($companyId,$eventId)

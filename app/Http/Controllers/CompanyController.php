@@ -472,7 +472,7 @@ class CompanyController extends Controller
         //var_dump($data->data);
         $accreditationCategorysSelectOptions = array();
         foreach ($accreditationCategories as $accreditationCategory) {
-            $accreditationCategorysSelectOption = new SelectOption($accreditationCategory->accreditation_category_id, $accreditationCategory->name);
+            $accreditationCategorysSelectOption = new SelectOption($accreditationCategory->accreditation_category_id, $accreditationCategory->accreditation_category_name);
             $accreditationCategorysSelectOptions[] = $accreditationCategorysSelectOption;
         }
 
@@ -538,7 +538,8 @@ class CompanyController extends Controller
                 "event_id"=> $event_id,
                 "company_id"=> $company_id,
                 "accreditation_category_id"=> $accredit_cat_id,
-                "size"=> $size
+                "size"=> $size,
+                "status" => 2
             ];
             $result = CallAPI::postAPI('company/accreditationCategory/add',$body);
             $errCode = $result['errCode'];
